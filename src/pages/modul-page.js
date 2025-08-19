@@ -49,7 +49,7 @@ const ModulPage = {
           <p class="text-xs text-gray-500 mb-4">Oleh: ${module.author}</p>
           <p class="text-sm text-gray-700 mb-4">${module.short_description}</p>
           <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors">
-            Pelajari
+            ${isTeacher ? 'Detail' : 'Pelajari'}
           </a>
           ${teacherControls}
         </div>

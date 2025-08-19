@@ -28,7 +28,7 @@ export function generateNavbarTemplate() {
                 </h1>
                 <div class="flex items-center gap-6">
                   <nav class="hidden md:flex items-center gap-6">
-                    <a href="#/dasbor" class="hover:text-gray-200 transition-colors">Dasbor</a>
+                    ${userData && userData.role !== 'teacher' && userData.role !== 'super admin' ? `<a href="#/dasbor" class="hover:text-gray-200 transition-colors">Dasbor</a>` : ''}
                     <a href="#/modul" class="hover:text-gray-200 transition-colors">Modul</a>
                     ${superAdminLink}
                   </nav>
