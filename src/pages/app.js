@@ -11,15 +11,41 @@ class App {
   }
 
   _initialAppShell() {
-    // Navbar will be rendered dynamically based on the active route
   }
 
-  async renderPage(currentPath) {
+  async renderPage() {
     const route = getActiveRoute();
-    const page = routes[route] || routes['/']; // Fallback ke halaman utama
+    const publicRoutes = ['/login', '/register']; 
+    const token = localStorage.getItem('token');
+
+    if (!token && !publicRoutes.includes(route)) {
+      window.location.hash = '#/login';
+      return;
+    }
+
+    if (token && publicRoutes.includes(route)) {
+      window.location.hash = '#/dasbor';
+      return;
+    }
+
+    const page = routes[route] || routes['/'];
     
-    this._navbar.innerHTML = generateNavbarTemplate(currentPath);
-    this._content.innerHTML = await new page().render();
+    this._navbar.innerHTML = generateNavbarTemplate();
+
+    const logoutButton = this._navbar.querySelector('#logout-button');
+    if (logoutButton) {
+      logoutButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        window.location.hash = '#/login';
+      });
+    }
+
+    this._content.innerHTML = await page.render();
+    
+    if (page.afterRender) {
+      await page.afterRender();
+    }
   }
 }
 

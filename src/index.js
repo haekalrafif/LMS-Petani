@@ -9,8 +9,6 @@ const renderApp = () => {
   app.renderPage(window.location.hash);
 };
 
-// Render halaman saat pertama kali dimuat
 window.addEventListener('load', renderApp);
 
-// Render ulang halaman saat hash URL berubah
 window.addEventListener('hashchange', renderApp);
