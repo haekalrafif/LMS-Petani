@@ -46,6 +46,8 @@ export const createModule = (moduleData) => apiFetch('/modules', { method: 'POST
 export const createMaterial = (moduleId, materialData) => apiFetch(`/modules/${moduleId}/materials`, { method: 'POST', body: materialData }); 
 export const updateModule = (id, moduleData) => apiFetch(`/modules/${id}`, { method: 'PUT', body: moduleData }); 
 export const deleteModule = (id) => apiFetch(`/modules/${id}`, { method: 'DELETE' });
+export const getMaterialById = (moduleId, materialId) => apiFetch(`/modules/${moduleId}/materials/${materialId}`);
+export const updateMaterial = (moduleId, materialId, materialData) => apiFetch(`/modules/${moduleId}/materials/${materialId}`, { method: 'PUT', body: materialData });
 
 export const getCurrentUser = () => {
     const token = localStorage.getItem('token');

@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const [modules] = await db.query(`
-            SELECT m.id, m.title, m.short_description, m.image_url, m.created_at, m.updated_at, u.username as author
+            SELECT m.id, m.title, m.short_description, m.image_url, m.created_at, m.updated_at, m.author_id, u.username as author
             FROM modules m
             JOIN users u ON m.author_id = u.id
             WHERE m.id = ?

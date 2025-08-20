@@ -6,12 +6,14 @@ const ModulDetailPage = {
     const module = await getModule(moduleId);
     const user = getCurrentUser(); 
     const isTeacher = user && user.role === 'teacher'; 
+    const isModuleAuthor = user && user.id === module.author_id;
 
     if (!module) {
       return `<p class="text-center text-red-500">Modul tidak ditemukan.</p>`;
     }
 
-    const addMaterialButton = isTeacher ? `
+    const addMaterialButton = isTeacher && isModuleAuthor ? 
+    `
       <div class="flex justify-end mb-6">
         <a href="#/modul/${module.id}/tambah-materi" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
           Tambah Materi
@@ -30,7 +32,13 @@ const ModulDetailPage = {
         <div id="materials-list" class="space-y-6">
           ${module.materials.length > 0 ? module.materials.map(material => `
             <div class="bg-white p-6 rounded-lg shadow-md">
-              <h4 class="text-xl font-bold mb-2">${material.title}</h4>
+              <div class="flex justify-between items-center mb-2">
+                <h4 class="text-xl font-bold">${material.title}</h4>
+                ${isTeacher && isModuleAuthor ? 
+                `
+                  <a href="#/modul/${module.id}/materi-edit/${material.id}" class="text-sm text-blue-600 hover:underline">Edit</a>
+                ` : ''}
+              </div>
               ${material.image_url ? `<img src="${material.image_url}" alt="${material.title}" class="w-full h-auto rounded-lg mb-4">` : ''}
               <p class="text-gray-700">${material.content}</p>
             </div>
