@@ -1,4 +1,3 @@
-import { getActiveRoute } from '../utils/url-parser.js';
 import { routes } from '../routes.js';
 import { generateNavbarTemplate } from '../templates.js';
 
@@ -14,22 +13,46 @@ class App {
   }
 
   async renderPage() {
-    const route = getActiveRoute();
-    const publicRoutes = ['/login', '/register']; 
+    const currentHashPath = window.location.hash.slice(1).toLowerCase();
+    let page = null;
+    let matchedRoutePattern = null;
+
+    const fullPathWithSlash = currentHashPath;
+    if (routes[fullPathWithSlash]) {
+      matchedRoutePattern = fullPathWithSlash;
+      page = routes[fullPathWithSlash];
+    } else {
+      for (const routePattern in routes) {
+        if (routePattern.includes(':')) {
+          const regex = new RegExp(`^${routePattern.replace(/:[a-zA-Z0-9_]+/g, '(.+)')}$`);
+          
+          if (regex.test(fullPathWithSlash)) {
+            matchedRoutePattern = routePattern;
+            page = routes[routePattern];
+            break;
+          }
+        }
+      }
+    }
+
+    if (!page) {
+      page = routes['/'];
+      matchedRoutePattern = '/';
+    }
+
+    const publicRoutes = ['/login', '/register'];
     const token = localStorage.getItem('token');
 
-    if (!token && !publicRoutes.includes(route)) {
+    if (!token && !publicRoutes.includes(matchedRoutePattern)) {
       window.location.hash = '#/login';
       return;
     }
 
-    if (token && publicRoutes.includes(route)) {
+    if (token && publicRoutes.includes(matchedRoutePattern)) {
       window.location.hash = '#/dasbor';
       return;
     }
 
-    const page = routes[route] || routes['/'];
-    
     this._navbar.innerHTML = generateNavbarTemplate();
 
     const logoutButton = this._navbar.querySelector('#logout-button');
@@ -41,10 +64,20 @@ class App {
       });
     }
 
-    this._content.innerHTML = await page.render();
+    try {
+      const pageContent = await page.render();
+      this._content.innerHTML = pageContent;
+    } catch (error) {
+      console.error('Error during page.render():', error);
+      this._content.innerHTML = '<p style="color: red;">Error rendering page. Check console for details.</p>';
+    }
     
     if (page.afterRender) {
-      await page.afterRender();
+      try {
+        await page.afterRender();
+      } catch (error) {
+        console.error('Error during page.afterRender():', error);
+      }
     }
   }
 }

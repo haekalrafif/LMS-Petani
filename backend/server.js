@@ -12,9 +12,11 @@ app.use('/uploads', express.static('public/uploads'));
 
 const authRoutes = require('./routes/auth');
 const moduleRoutes = require('./routes/modules');
+const materialRoutes = require('./routes/materials');
 const userRoutes = require('./routes/users');
 app.use('/api/auth', authRoutes);
 app.use('/api/modules', moduleRoutes);
+app.use('/api/modules', materialRoutes);
 app.use('/api/users', userRoutes);
 
 app.get('/api', (req, res) => {
