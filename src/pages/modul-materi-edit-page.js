@@ -31,7 +31,7 @@ const ModulMateriEditPage = {
               <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                 Update Materi
               </button>
-              <a href="#/modul/${moduleId}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+              <a href="#/modul-detail/${moduleId}/${materialId}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
                 Batal
               </a>
             </div>
@@ -69,7 +69,7 @@ const ModulMateriEditPage = {
       try {
         await updateMaterial(moduleId, materialId, formData); 
         alert('Materi berhasil diperbarui!');
-        window.location.hash = `#/modul-detail/${moduleId}`;
+        window.location.hash = `#/modul-detail/${moduleId}/${materialId}`;
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
       }

@@ -8,7 +8,10 @@ class ModulDetailPage {
   }
 
   async render() {
-    const moduleId = window.location.hash.split('/')[2];
+    const urlParts = window.location.hash.split('/');
+    const moduleId = urlParts[2];
+    const materialIdFromUrl = urlParts.length > 3 ? urlParts[3] : null;
+
     try {
       this._module = await getModule(moduleId);
       this._user = getCurrentUser();
@@ -20,7 +23,9 @@ class ModulDetailPage {
       return `<p class="text-center text-red-500">Modul tidak ditemukan.</p>`;
     }
 
-    if (this._module.materials.length > 0) {
+    if (materialIdFromUrl) {
+      this._activeMaterialId = parseInt(materialIdFromUrl, 10);
+    } else if (this._module.materials.length > 0) {
       this._activeMaterialId = this._module.materials[0].id;
     }
 
@@ -115,7 +120,7 @@ class ModulDetailPage {
 
   _createMaterialListItem(material) {
     return `
-      <li class="mb-2">
+      <li>
         <a href="#" class="material-link block p-3 mx-[-1.25rem] px-5 hover:bg-gray-100 transition-colors" data-material-id="${material.id}">
           ${material.title}
         </a>
@@ -135,7 +140,7 @@ class ModulDetailPage {
           <h2 class="text-2xl font-bold text-brand-dark">${material.title}</h2>
           <div class="flex items-center gap-4">
             ${isTeacher && isModuleAuthor ? `
-              <a href="#/modul/${this._module.id}/materi-edit/${material.id}" class="text-sm text-blue-600 hover:underline">Edit Materi</a>
+              <a href="#/modul/${this._module.id}/materi-edit/${material.id}" class="bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-800">Edit</a>
             ` : ''}
             ${!isTeacher ? `
             <button class="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-green-700 transition-colors flex items-center">
@@ -146,7 +151,7 @@ class ModulDetailPage {
             </button>
             ` : ''}
           </div>
-        </div>
+        </div><hr class="my-4 border-t border-gray-200" />
         
         ${material.image_url ? `<img src="${material.image_url}" alt="${material.title}" class="w-full max-h-96 object-cover rounded-lg mb-4 shadow">` : ''}
 

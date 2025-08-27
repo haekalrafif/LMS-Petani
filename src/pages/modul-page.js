@@ -32,15 +32,17 @@ const ModulPage = {
   createModuleCard(module, isTeacher) {
     const teacherControls = isTeacher
       ? `
-        <div class="flex justify-end gap-2 mt-4">
-          <a href="#/modul-edit/${module.id}" class="text-sm text-blue-600 hover:underline">Edit</a>
-          <button data-id="${module.id}" class="delete-btn text-sm text-red-600 hover:underline">Hapus</button>
+        <div class="p-5 pt-0">
+            <div class="flex gap-4">
+              <a href="#/modul-edit/${module.id}" class="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 text-center transition-colors rounded-lg">Edit</a>
+              <button data-id="${module.id}" class="delete-btn flex-1 bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-4 transition-colors rounded-lg">Hapus</button>
+            </div>
         </div>
       `
       : '';
 
     return `
-      <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col">
+      <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col h-full">
       <div class="w-full h-40 overflow-hidden">
           ${module.image_url ? `<img src="${module.image_url}" alt="Gambar Modul" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-500">Tidak Ada Gambar</span></div>`}
       </div>
@@ -51,8 +53,8 @@ const ModulPage = {
         <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors mt-auto">
           ${isTeacher ? 'Detail' : 'Pelajari'}
         </a>
-        ${teacherControls}
       </div>
+      ${teacherControls}
     </div>
   `;
 },

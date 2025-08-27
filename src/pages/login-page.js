@@ -52,7 +52,15 @@ const LoginPage = {
         }
 
         localStorage.setItem('token', data.token);
-        window.location.hash = '#/dasbor';
+        const token = data.token;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.user.role === 'teacher') {
+          window.location.hash = '#/modul';
+        } else if (payload.user.role === 'super admin') {
+          window.location.hash = '#/superadmin';
+        } else {
+          window.location.hash = '#/dasbor';
+        }
 
       } catch (error) {
         errorMessage.textContent = error.message;
