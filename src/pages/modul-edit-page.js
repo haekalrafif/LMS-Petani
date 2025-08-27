@@ -7,6 +7,7 @@ const ModulEditPage = {
 
     try {
       const module = await getModule(id);
+      const remainingChars = 155 - module.short_description.length;
       return `
         <div class="container mx-auto px-6 py-8">
           <h2 class="text-3xl font-bold mb-8">Edit Modul</h2>
@@ -17,7 +18,8 @@ const ModulEditPage = {
             </div>
             <div class="mb-6">
               <label for="short_description" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Singkat Modul</label>
-              <textarea id="short_description" name="short_description" rows="3" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">${module.short_description}</textarea>
+              <textarea id="short_description" name="short_description" rows="3" required maxlength="155" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">${module.short_description}</textarea>
+              <p id="char-count" class="text-sm text-gray-500 -mt-2">${remainingChars} karakter tersisa</p>
             </div>
             
             <div class="mb-6">
@@ -48,6 +50,17 @@ const ModulEditPage = {
     const id = urlParts[urlParts.length - 1];
     const form = document.querySelector('#edit-module-form');
     const errorMessage = document.querySelector('#error-message');
+    const shortDescriptionInput = document.querySelector('#short_description');
+    const charCount = document.querySelector('#char-count');
+
+    if (shortDescriptionInput && charCount) {
+        shortDescriptionInput.addEventListener('input', () => {
+            const remaining = 155 - shortDescriptionInput.value.length;
+            charCount.textContent = `${remaining} karakter tersisa`;
+        });
+    }
+
+    if (!form) return;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();

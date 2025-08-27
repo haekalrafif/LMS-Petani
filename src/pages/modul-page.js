@@ -40,22 +40,22 @@ const ModulPage = {
       : '';
 
     return `
-      <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl">
-        <div class="w-full h-40 overflow-hidden">
-            ${module.image_url ? `<img src="${module.image_url}" alt="Gambar Modul" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-500">Tidak Ada Gambar</span></div>`}
-        </div>
-        <div class="p-5">
-          <h3 class="text-lg font-bold text-brand-dark mb-2">${module.title}</h3>
-          <p class="text-xs text-gray-500 mb-4">Oleh: ${module.author}</p>
-          <p class="text-sm text-gray-700 mb-4">${module.short_description}</p>
-          <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors">
-            ${isTeacher ? 'Detail' : 'Pelajari'}
-          </a>
-          ${teacherControls}
-        </div>
+      <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col">
+      <div class="w-full h-40 overflow-hidden">
+          ${module.image_url ? `<img src="${module.image_url}" alt="Gambar Modul" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-500">Tidak Ada Gambar</span></div>`}
       </div>
-    `;
-  },
+      <div class="p-5 flex flex-col flex-grow">
+        <h3 class="text-lg font-bold text-brand-dark mb-2">${module.title}</h3>
+        <p class="text-xs text-gray-500 mb-4">Oleh: ${module.author}</p>
+        <p class="text-sm text-gray-700 mb-4 flex-grow">${module.short_description}</p>
+        <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors mt-auto">
+          ${isTeacher ? 'Detail' : 'Pelajari'}
+        </a>
+        ${teacherControls}
+      </div>
+    </div>
+  `;
+},
 
   async afterRender() {
     const user = getCurrentUser();
