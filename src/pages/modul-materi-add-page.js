@@ -1,18 +1,19 @@
-import { createMaterial } from '../utils/api.js';
+import { createMaterial, getModule } from '../utils/api.js';
 
 const ModulMateriAddPage = {
   async render() {
     const moduleId = window.location.hash.split('/')[2];
+    const module = await getModule(moduleId);
 
     return `
       <div class="container mx-auto px-6 py-8">
-        <h2 class="text-3xl font-bold mb-8">Tambah Materi Baru untuk Modul ${moduleId}</h2>
+        <h2 class="text-3xl font-bold mb-8">Tambah Materi Baru untuk Modul ${module.title}</h2>
         <form id="add-material-form" class="bg-white p-8 rounded-lg shadow-md">
           <div class="mb-4">
             <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Materi</label>
             <input type="text" id="title" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
           </div>
-          <div class="mb-6">
+          <div class="mb-0">
             <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Penjelasan Materi</label>
             <textarea id="content" name="content" rows="10" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"></textarea>
           </div>
@@ -24,7 +25,7 @@ const ModulMateriAddPage = {
             <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Simpan Materi
             </button>
-            <a href="#/modul/${moduleId}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+            <a href="#/modul-detail/${moduleId}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
               Batal
             </a>
           </div>

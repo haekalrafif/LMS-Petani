@@ -16,7 +16,7 @@ const ModulEditPage = {
               <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Modul</label>
               <input type="text" id="title" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="${module.title}">
             </div>
-            <div class="mb-6">
+            <div class="mb-2">
               <label for="short_description" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Singkat Modul</label>
               <textarea id="short_description" name="short_description" rows="3" required maxlength="155" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">${module.short_description}</textarea>
               <p id="char-count" class="text-sm text-gray-500 -mt-2">${remainingChars} karakter tersisa</p>

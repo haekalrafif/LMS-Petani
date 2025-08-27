@@ -17,7 +17,7 @@ const ModulMateriEditPage = {
               <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Materi</label>
               <input type="text" id="title" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="${material.title}">
             </div>
-            <div class="mb-6">
+            <div class="mb-0">
               <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Penjelasan Materi</label>
               <textarea id="content" name="content" rows="10" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">${material.content}</textarea>
             </div>
