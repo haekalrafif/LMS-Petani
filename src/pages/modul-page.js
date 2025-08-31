@@ -41,22 +41,39 @@ const ModulPage = {
       `
       : '';
 
+    let progressBarHtml = '';
+    if (!isTeacher && module.total_materials !== undefined && module.completed_materials !== undefined) {
+      const total = module.total_materials;
+      const completed = module.completed_materials;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    progressBarHtml = `
+      <div class="mb-4">
+          <p class="text-xs font-bold text-gray-900 mb-1">${percentage}% Selesai</p>
+          <div class="w-full bg-gray-200 rounded-full h-2.5">
+              <div class="bg-green-700 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+          </div>
+      </div>
+    `;
+    }
+
     return `
       <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col h-full">
-      <div class="w-full h-40 overflow-hidden">
-          ${module.image_url ? `<img src="${module.image_url}" alt="Gambar Modul" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-500">Tidak Ada Gambar</span></div>`}
+        <div class="w-full h-40 overflow-hidden">
+            ${module.image_url ? `<img src="${module.image_url}" alt="Gambar Modul" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-500">Tidak Ada Gambar</span></div>`}
+        </div>
+        <div class="p-5 flex flex-col flex-grow">
+          <h3 class="text-lg font-bold text-brand-dark mb-0">${module.title}</h3>
+          <p class="text-xs text-gray-500 mb-2">Oleh: ${module.author}</p>
+          <p class="text-sm text-gray-700 mb-2 flex-grow">${module.short_description}</p>
+          ${progressBarHtml} 
+          <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors mt-auto">
+            ${isTeacher ? 'Detail' : 'Pelajari'}
+          </a>
+        </div>
+        ${teacherControls}
       </div>
-      <div class="p-5 flex flex-col flex-grow">
-        <h3 class="text-lg font-bold text-brand-dark mb-2">${module.title}</h3>
-        <p class="text-xs text-gray-500 mb-4">Oleh: ${module.author}</p>
-        <p class="text-sm text-gray-700 mb-4 flex-grow">${module.short_description}</p>
-        <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors mt-auto">
-          ${isTeacher ? 'Detail' : 'Pelajari'}
-        </a>
-      </div>
-      ${teacherControls}
-    </div>
-  `;
+    `;
 },
 
   async afterRender() {

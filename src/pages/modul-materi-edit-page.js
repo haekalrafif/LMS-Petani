@@ -22,8 +22,8 @@ const ModulMateriEditPage = {
               <textarea id="content" name="content" rows="10" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">${material.content}</textarea>
             </div>
             <div class="mb-6">
-              <label for="current-image" class="block text-gray-700 text-sm font-bold mb-2">Gambar Saat Ini</label>
-              ${material.image_url ? `<img src="${material.image_url}" alt="Gambar Materi" class="w-48 h-auto mb-4 rounded-md shadow-sm">` : `<p class="text-gray-500">Tidak ada gambar saat ini.</p>`}
+              <label for="current-image" class="block text-gray-700 text-sm font-bold mb-0">Gambar Saat Ini</label>
+              ${material.image_url ? `<img src="${material.image_url}" alt="Gambar Materi" class="w-48 h-auto mb-4 rounded-md shadow-sm">` : `<p class="text-gray-500 mb-4">Tidak ada gambar saat ini.</p>`}
               <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Upload Gambar Baru (Opsional, JPG)</label>
               <input type="file" id="image" name="image" accept="image/jpeg" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>

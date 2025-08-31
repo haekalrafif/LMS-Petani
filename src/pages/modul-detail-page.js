@@ -1,10 +1,11 @@
-import { getModule, getCurrentUser } from '../utils/api.js';
+import { getModule, getCurrentUser, getModuleProgress, markMaterialAsCompleted } from '../utils/api.js';
 
 class ModulDetailPage {
   constructor() {
     this._module = null;
     this._user = null;
     this._activeMaterialId = null;
+    this._completedMaterials = []; 
   }
 
   async render() {
@@ -13,8 +14,15 @@ class ModulDetailPage {
     const materialIdFromUrl = urlParts.length > 3 ? urlParts[3] : null;
 
     try {
-      this._module = await getModule(moduleId);
       this._user = getCurrentUser();
+      const [moduleData, progressData] = await Promise.all([
+        getModule(moduleId),
+        this._user && this._user.role !== 'teacher' ? getModuleProgress(moduleId) : Promise.resolve({ completedMaterialIds: [] })
+      ]);
+      
+      this._module = moduleData;
+      this._completedMaterials = progressData.completedMaterialIds || [];
+
     } catch (error) {
       return `<p class="text-center text-red-500">Gagal memuat modul: ${error.message}</p>`;
     }
@@ -32,10 +40,24 @@ class ModulDetailPage {
     const isTeacher = this._user && this._user.role === 'teacher';
     const isModuleAuthor = this._user && this._user.id === this._module.author_id;
 
-    const addMaterialButton = isTeacher && isModuleAuthor ?
-      `<a href="#/modul/${this._module.id}/tambah-materi" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors block text-center mb-4">
-        Tambah Materi Baru
-       </a>` : '';
+    let sidebarContent = '';
+    if (isTeacher && isModuleAuthor) {
+        // Tampilan untuk Teacher: Tombol "Tambah Materi"
+        sidebarContent = `
+            <a href="#/modul/${this._module.id}/tambah-materi" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors block text-center">
+                Tambah Materi Baru
+            </a>`;
+    } else {
+        // Tampilan untuk Student: Progress Bar
+        const { percentage } = this._calculateProgress();
+        sidebarContent = `
+            <p id="progress-text" class="text-xs font-bold text-gray-900 mb-1">${percentage}% Selesai</p>
+            <div id="progress-container" class="w-full bg-gray-200 rounded-full h-2.5">
+              <div id="progress-bar" class="bg-green-700 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+            </div>`;
+    }
+    // --- AKHIR PERUBAHAN ---
+
 
     return `
       <div class="container mx-auto px-6">
@@ -44,14 +66,11 @@ class ModulDetailPage {
           <aside class="w-full md:w-1/4">
             <div class="bg-white p-5 rounded-lg shadow-md sticky top-24">
               <h3 class="text-lg font-bold text-brand-dark mb-2">${this._module.title}</h3>
-              <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-                <div class="bg-green-700 h-2.5 rounded-full" style="width: 0%"></div>
-              </div>
-              <p class="text-xs text-gray-500">0% Selesai</p>
+
+              ${sidebarContent}
+              
               <hr class="my-3 mx-[-1.25rem] border-t border-gray-200" />
               
-              ${addMaterialButton}
-
               <nav>
                 <ul id="materials-list-sidebar">
                   ${this._module.materials.length > 0
@@ -76,6 +95,35 @@ class ModulDetailPage {
   }
 
   async afterRender() {
+    this._addMaterialLinkListeners();
+    this._addCompleteButtonListener();
+    this._updateActiveMaterialStyle();
+  }
+
+  _calculateProgress() {
+    const totalMaterials = this._module.materials.length;
+    if (totalMaterials === 0) {
+      return { percentage: 0 };
+    }
+    const completedCount = this._completedMaterials.length;
+    const percentage = Math.round((completedCount / totalMaterials) * 100);
+    return { percentage };
+  }
+
+  _updateProgressBar() {
+    const { percentage } = this._calculateProgress();
+    const progressBar = document.querySelector('#progress-bar');
+    const progressText = document.querySelector('#progress-text');
+
+    if (progressBar) {
+      progressBar.style.width = `${percentage}%`;
+    }
+    if (progressText) {
+      progressText.textContent = `${percentage}% Selesai`;
+    }
+  }
+
+  _addMaterialLinkListeners() {
     const materialLinks = document.querySelectorAll('.material-link');
     materialLinks.forEach(link => {
       link.addEventListener('click', (event) => {
@@ -87,42 +135,100 @@ class ModulDetailPage {
         const contentContainer = document.querySelector('#material-content-container');
         contentContainer.innerHTML = this._createMaterialContent(selectedMaterial);
 
-        materialLinks.forEach(l => l.classList.remove('active-material'));
-        event.currentTarget.classList.add('active-material');
+        this._updateActiveMaterialStyle();
+        this._addCompleteButtonListener();
       });
     });
+  }
+  
+  _addCompleteButtonListener() {
+    const completeButton = document.querySelector('.complete-btn');
+    if (completeButton) {
+      completeButton.addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        const materialId = parseInt(button.dataset.materialId, 10);
+        const moduleId = this._module.id;
+        
+        button.disabled = true;
+        button.textContent = 'Menyimpan...';
 
-    const style = document.createElement('style');
-    style.innerHTML = `
-      .material-link.active-material {
-        background-color: #DCFCE7; /* bg-green-100 */
-        color: #16A34A; /* text-brand-green */
-        font-weight: 600; /* font-semibold */
-        position: relative;
-      }
-      .material-link.active-material::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 0.125rem; /* w-0.5 */
-        background-color: #1F2937; /* bg-brand-dark */
-      }
-    `;
-    document.head.appendChild(style);
+        try {
+          await markMaterialAsCompleted(moduleId, materialId);
+          this._completedMaterials.push(materialId);
+          this._updateProgressBar();
+          
+          const materialListItem = document.querySelector(`.material-link[data-material-id='${materialId}']`);
+          if(materialListItem && !materialListItem.querySelector('svg')) {
+              materialListItem.innerHTML += `
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>`;
+          }
 
-    const firstLink = document.querySelector(`.material-link[data-material-id='${this._activeMaterialId}']`);
-    if (firstLink) {
-      firstLink.classList.add('active-material');
+          button.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 -ml-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Selesai
+          `;
+          button.classList.remove('bg-green-600', 'hover:bg-green-700', 'complete-btn');
+          button.classList.add('bg-gray-400', 'cursor-not-allowed');
+
+        } catch (error) {
+          alert(`Gagal menandai selesai: ${error.message}`);
+          button.disabled = false;
+          button.textContent = 'Tandai Selesai';
+        }
+      });
+    }
+  }
+
+  _updateActiveMaterialStyle() {
+    const materialLinks = document.querySelectorAll('.material-link');
+    materialLinks.forEach(l => l.classList.remove('active-material'));
+    
+    const activeLink = document.querySelector(`.material-link[data-material-id='${this._activeMaterialId}']`);
+    if (activeLink) {
+      activeLink.classList.add('active-material');
+    }
+
+    const styleId = 'dynamic-active-material-style';
+    if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.innerHTML = `
+        .material-link.active-material {
+            background-color: #DCFCE7; /* bg-green-100 */
+            color: #16A34A; /* text-brand-green */
+            font-weight: 600; /* font-semibold */
+            position: relative;
+        }
+        .material-link.active-material::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 0.125rem; /* w-0.5 */
+            background-color: #1F2937; /* bg-brand-dark */
+        }
+        `;
+        document.head.appendChild(style);
     }
   }
 
   _createMaterialListItem(material) {
+    const isCompleted = this._completedMaterials.includes(material.id);
+    const completedIcon = isCompleted ?
+      `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 ml-auto flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+       </svg>` : '';
+
     return `
       <li>
-        <a href="#" class="material-link block p-3 mx-[-1.25rem] px-5 hover:bg-gray-100 transition-colors" data-material-id="${material.id}">
-          ${material.title}
+        <a href="#" class="material-link flex items-center p-3 mx-[-1.25rem] px-5 hover:bg-gray-100 transition-colors" data-material-id="${material.id}">
+          <span class="flex-grow">${material.title}</span>
+          ${completedIcon}
         </a>
       </li>
     `;
@@ -133,6 +239,26 @@ class ModulDetailPage {
 
     const isTeacher = this._user && this._user.role === 'teacher';
     const isModuleAuthor = this._user && this._user.id === this._module.author_id;
+    const isCompleted = this._completedMaterials.includes(material.id);
+
+    let completeButtonHtml = '';
+    if (!isTeacher) {
+        if (isCompleted) {
+            completeButtonHtml = `
+            <button disabled class="bg-gray-400 text-white font-semibold py-2 px-5 rounded-lg flex items-center cursor-not-allowed">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 -ml-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Selesai
+            </button>`;
+        } else {
+            completeButtonHtml = `
+            <button data-material-id="${material.id}" class="complete-btn bg-green-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-green-700 transition-colors flex items-center">
+              Tandai Selesai
+            </button>`;
+        }
+    }
+
 
     return `
       <div class="bg-white p-6 rounded-lg shadow-md">
@@ -142,14 +268,7 @@ class ModulDetailPage {
             ${isTeacher && isModuleAuthor ? `
               <a href="#/modul/${this._module.id}/materi-edit/${material.id}" class="bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-800">Edit</a>
             ` : ''}
-            ${!isTeacher ? `
-            <button class="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-green-700 transition-colors flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 -ml-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              Tandai Selesai
-            </button>
-            ` : ''}
+            ${completeButtonHtml}
           </div>
         </div><hr class="my-4 border-t border-gray-200" />
         

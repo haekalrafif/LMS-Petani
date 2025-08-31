@@ -14,10 +14,13 @@ const authRoutes = require('./routes/auth');
 const moduleRoutes = require('./routes/modules');
 const materialRoutes = require('./routes/materials');
 const userRoutes = require('./routes/users');
+const progressRoutes = require('./routes/progress');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/modules', materialRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/modules', progressRoutes);
 
 app.get('/api', (req, res) => {
   res.json({ message: 'Hello from the backend!' });

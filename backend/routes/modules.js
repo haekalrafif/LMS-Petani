@@ -4,15 +4,54 @@ const db = require('../db');
 const { protect, isTeacher } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 const { uploadToCloudinary } = require('../config/cloudinary');
+const jwt = require('jsonwebtoken');
+
+const decodeToken = (req) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            token = req.headers.authorization.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            return decoded.user;
+        } catch (error) {
+            return null;
+        }
+    }
+    return null;
+};
+
 
 router.get('/', async (req, res) => {
+    const user = decodeToken(req);
+
     try {
-        const [modules] = await db.query(`
-            SELECT m.id, m.title, m.short_description, m.image_url, m.created_at, m.updated_at, u.username as author
-            FROM modules m
-            JOIN users u ON m.author_id = u.id
-            ORDER BY m.created_at DESC
-        `);
+        let query;
+        let queryParams = [];
+
+        if (user && user.role === 'user') {
+            query = `
+                SELECT 
+                    m.id, m.title, m.short_description, m.image_url, m.created_at, m.updated_at, 
+                    u.username as author,
+                    (SELECT COUNT(*) FROM materials WHERE module_id = m.id) as total_materials,
+                    (SELECT COUNT(*) FROM user_material_completions umc
+                     JOIN materials mat ON umc.material_id = mat.id
+                     WHERE mat.module_id = m.id AND umc.user_id = ?) as completed_materials
+                FROM modules m
+                JOIN users u ON m.author_id = u.id
+                ORDER BY m.created_at DESC
+            `;
+            queryParams.push(user.id);
+        } else {
+            query = `
+                SELECT m.id, m.title, m.short_description, m.image_url, m.created_at, m.updated_at, u.username as author
+                FROM modules m
+                JOIN users u ON m.author_id = u.id
+                ORDER BY m.created_at DESC
+            `;
+        }
+
+        const [modules] = await db.query(query, queryParams);
         res.json(modules);
     } catch (error) {
         console.error(error);
