@@ -42,13 +42,11 @@ class ModulDetailPage {
 
     let sidebarContent = '';
     if (isTeacher && isModuleAuthor) {
-        // Tampilan untuk Teacher: Tombol "Tambah Materi"
         sidebarContent = `
             <a href="#/modul/${this._module.id}/tambah-materi" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors block text-center">
                 Tambah Materi Baru
             </a>`;
     } else {
-        // Tampilan untuk Student: Progress Bar
         const { percentage } = this._calculateProgress();
         sidebarContent = `
             <p id="progress-text" class="text-xs font-bold text-gray-900 mb-1">${percentage}% Selesai</p>
@@ -56,7 +54,6 @@ class ModulDetailPage {
               <div id="progress-bar" class="bg-green-700 h-2.5 rounded-full" style="width: ${percentage}%"></div>
             </div>`;
     }
-    // --- AKHIR PERUBAHAN ---
 
 
     return `
