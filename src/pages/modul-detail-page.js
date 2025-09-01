@@ -31,10 +31,13 @@ class ModulDetailPage {
       return `<p class="text-center text-red-500">Modul tidak ditemukan.</p>`;
     }
 
+    this._activeMaterialId = this._getFirstUncompletedMaterialId();
+
     if (materialIdFromUrl) {
-      this._activeMaterialId = parseInt(materialIdFromUrl, 10);
-    } else if (this._module.materials.length > 0) {
-      this._activeMaterialId = this._module.materials[0].id;
+        const requestedId = parseInt(materialIdFromUrl, 10);
+        if (this._isMaterialUnlocked(requestedId)) {
+            this._activeMaterialId = requestedId;
+        }
     }
 
     const isTeacher = this._user && this._user.role === 'teacher';
@@ -97,6 +100,35 @@ class ModulDetailPage {
     this._updateActiveMaterialStyle();
   }
 
+  _isMaterialUnlocked(materialId) {
+    if (this._user && this._user.role === 'teacher') return true;
+
+    const materialIndex = this._module.materials.findIndex(m => m.id === materialId);
+    if (materialIndex === -1) return false;
+    if (materialIndex === 0) return true;
+    
+    const previousMaterial = this._module.materials[materialIndex - 1];
+    return this._completedMaterials.includes(previousMaterial.id);
+  }
+
+  _getFirstUncompletedMaterialId() {
+      if (!this._module || this._module.materials.length === 0) return null;
+      
+      for (const material of this._module.materials) {
+          if (!this._completedMaterials.includes(material.id)) {
+              return material.id;
+          }
+      }
+      return this._module.materials[this._module.materials.length - 1].id;
+  }
+  
+  _generateSidebarList() {
+      if (this._module.materials.length === 0) {
+          return '<li class="text-sm text-gray-500">Belum ada materi.</li>';
+      }
+      return this._module.materials.map(material => this._createMaterialListItem(material)).join('');
+  }
+
   _calculateProgress() {
     const totalMaterials = this._module.materials.length;
     if (totalMaterials === 0) {
@@ -125,6 +157,12 @@ class ModulDetailPage {
     materialLinks.forEach(link => {
       link.addEventListener('click', (event) => {
         event.preventDefault();
+
+        if (event.currentTarget.classList.contains('locked')) {
+            alert("Materi ini akan terbuka setelah Anda menandai materi sebelumnya sebagai selesai.");
+            return;
+        }
+        
         const materialId = parseInt(event.currentTarget.dataset.materialId, 10);
         this._activeMaterialId = materialId;
 
@@ -152,15 +190,11 @@ class ModulDetailPage {
         try {
           await markMaterialAsCompleted(moduleId, materialId);
           this._completedMaterials.push(materialId);
+          const sidebarList = document.querySelector('#materials-list-sidebar');
+          sidebarList.innerHTML = this._generateSidebarList();
+          this._addMaterialLinkListeners();
+          this._updateActiveMaterialStyle();
           this._updateProgressBar();
-          
-          const materialListItem = document.querySelector(`.material-link[data-material-id='${materialId}']`);
-          if(materialListItem && !materialListItem.querySelector('svg')) {
-              materialListItem.innerHTML += `
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 ml-auto" viewBox="0 0 20 20" fill="currentColor">
-                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>`;
-          }
 
           button.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 -ml-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -216,16 +250,27 @@ class ModulDetailPage {
 
   _createMaterialListItem(material) {
     const isCompleted = this._completedMaterials.includes(material.id);
+    const isUnlocked = this._isMaterialUnlocked(material.id);
+
     const completedIcon = isCompleted ?
       `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 ml-auto flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
        </svg>` : '';
+    
+    const lockIcon = !isUnlocked ?
+        `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 ml-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 2a3 3 0 00-3 3v2H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V9a2 2 0 00-2-2h-1V5a3 3 0 00-3-3zm-1 5v2h2V7a1 1 0 00-2 0z" clip-rule="evenodd" />
+        </svg>` : '';
+
+    const textClass = isUnlocked ? 'text-gray-900' : 'text-gray-400';
+    const cursorClass = isUnlocked ? 'cursor-pointer' : 'cursor-not-allowed';
+    const lockedClass = isUnlocked ? '' : 'locked';
 
     return `
       <li>
-        <a href="#" class="material-link flex items-center p-3 mx-[-1.25rem] px-5 hover:bg-gray-100 transition-colors" data-material-id="${material.id}">
-          <span class="flex-grow">${material.title}</span>
-          ${completedIcon}
+        <a href="#" class="material-link flex items-center p-3 mx-[-1.25rem] px-5 hover:bg-gray-100 transition-colors ${cursorClass} ${lockedClass}" data-material-id="${material.id}">
+          <span class="flex-grow ${textClass}">${material.title}</span>
+          ${isCompleted ? completedIcon : lockIcon}
         </a>
       </li>
     `;
