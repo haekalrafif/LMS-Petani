@@ -55,9 +55,27 @@ class App {
 
     this._navbar.innerHTML = generateNavbarTemplate();
 
+    const burgerMenuButton = this._navbar.querySelector('#burger-menu-button');
+    const mobileMenu = this._navbar.querySelector('#mobile-menu');
+
+    if (burgerMenuButton) {
+      burgerMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+
     const logoutButton = this._navbar.querySelector('#logout-button');
     if (logoutButton) {
       logoutButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        window.location.hash = '#/login';
+      });
+    }
+
+    const logoutButtonMobile = this._navbar.querySelector('#logout-button-mobile');
+    if (logoutButtonMobile) {
+      logoutButtonMobile.addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem('token');
         window.location.hash = '#/login';

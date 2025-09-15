@@ -15,7 +15,7 @@ export function generateNavbarTemplate() {
         
         let superAdminLink = '';
         if (userData && userData.role === 'super admin') {
-            superAdminLink = `<a href="#/superadmin" class="hover:text-gray-200 transition-colors">Manajemen Pengguna</a>`;
+            superAdminLink = `<a href="#/superadmin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Manajemen Pengguna</a>`;
         }
 
         return `
@@ -32,13 +32,28 @@ export function generateNavbarTemplate() {
                     <a href="#/modul" class="hover:text-gray-200 transition-colors">Modul</a>
                     ${superAdminLink}
                   </nav>
-                  <div class="flex items-center gap-4">
+                  <div class="hidden md:flex items-center gap-4">
                     <span class="hidden sm:inline">${username}</span>
                     <button id="logout-button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                       Logout
                     </button>
                   </div>
+                  <div class="md:hidden flex items-center">
+                    <button id="burger-menu-button" class="text-white focus:outline-none">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
+              </div>
+              <div id="mobile-menu" class="hidden md:hidden">
+                <nav class="pt-4 pb-2 text-right">
+                  ${userData && userData.role !== 'teacher' && userData.role !== 'super admin' ? `<a href="#/dasbor" class="block px-4 py-2 text-white hover:bg-green-600">Dasbor</a>` : ''}
+                  <a href="#/modul" class="block px-4 py-2 text-white hover:bg-green-600">Modul</a>
+                  ${superAdminLink}
+                  <a href="#" id="logout-button-mobile" class="block px-4 py-2 text-white hover:bg-green-600">Logout</a>
+                </nav>
               </div>
             </div>
           </div>
