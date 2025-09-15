@@ -60,7 +60,7 @@ class ModulDetailPage {
 
 
     return `
-      <div class="container mx-auto px-6">
+      <div class="container mx-auto px-6 py-8">
         <div class="flex flex-col md:flex-row gap-8">
           
           <aside class="w-full md:w-1/4">
