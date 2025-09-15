@@ -304,9 +304,9 @@ class ModulDetailPage {
 
     return `
       <div class="bg-white p-6 rounded-lg shadow-md">
-        <div class="flex flex-col gap-4 mb-4">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
           <h2 class="text-2xl font-bold text-brand-dark">${material.title}</h2>
-          <div class="flex items-center gap-4 ml-auto">
+          <div class="flex items-center gap-4 self-end">
             ${isTeacher && isModuleAuthor ? `
               <a href="#/modul/${this._module.id}/materi-edit/${material.id}" class="bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-800">Edit</a>
             ` : ''}
