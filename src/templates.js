@@ -13,9 +13,12 @@ export function generateNavbarTemplate() {
         const userData = parseJwt(token)?.user;
         const username = userData ? userData.username : 'User';
         
-        let superAdminLink = '';
+        let superAdminLinkDesktop = '';
+        let superAdminLinkMobile = '';
+
         if (userData && userData.role === 'super admin') {
-            superAdminLink = `<a href="#/superadmin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Manajemen Pengguna</a>`;
+            superAdminLinkDesktop = `<a href="#/superadmin" class="hover:text-gray-200 transition-colors">Manajemen Pengguna</a>`;
+            superAdminLinkMobile = `<a href="#/superadmin" class="block px-4 py-2 text-white hover:bg-green-600">Manajemen Pengguna</a>`;
         }
 
         return `
@@ -30,7 +33,7 @@ export function generateNavbarTemplate() {
                   <nav class="hidden md:flex items-center gap-6">
                     ${userData && userData.role !== 'teacher' && userData.role !== 'super admin' ? `<a href="#/dasbor" class="hover:text-gray-200 transition-colors">Dasbor</a>` : ''}
                     <a href="#/modul" class="hover:text-gray-200 transition-colors">Modul</a>
-                    ${superAdminLink}
+                    ${superAdminLinkDesktop}
                   </nav>
                   <div class="hidden md:flex items-center gap-4">
                     <span class="hidden sm:inline">${username}</span>
@@ -51,7 +54,7 @@ export function generateNavbarTemplate() {
                 <nav class="pt-4 pb-2 text-right">
                   ${userData && userData.role !== 'teacher' && userData.role !== 'super admin' ? `<a href="#/dasbor" class="block px-4 py-2 text-white hover:bg-green-600">Dasbor</a>` : ''}
                   <a href="#/modul" class="block px-4 py-2 text-white hover:bg-green-600">Modul</a>
-                  ${superAdminLink}
+                  ${superAdminLinkMobile}
                   <a href="#" id="logout-button-mobile" class="block px-4 py-2 text-white hover:bg-green-600">Logout</a>
                 </nav>
               </div>

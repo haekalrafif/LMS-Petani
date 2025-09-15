@@ -41,9 +41,11 @@ const SuperAdminPage = {
       ? `<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right"></td>`
       : `
         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
-          ${userToRender.role === 'user' ? 
-            `<button data-id="${userToRender.id}" class="promote-btn text-sm bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700">Jadikan Teacher</button>` : ''}
-          <button data-id="${userToRender.id}" class="delete-user-btn text-sm bg-red-600 text-white py-1 px-3 rounded hover:bg-red-700 ml-2">Hapus</button>
+          <div class="flex flex-col sm:flex-row sm:justify-end gap-2">
+            ${userToRender.role === 'user' ? 
+              `<button data-id="${userToRender.id}" class="promote-btn text-sm bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700">Jadikan Teacher</button>` : ''}
+            <button data-id="${userToRender.id}" class="delete-user-btn text-sm bg-red-600 text-white py-1 px-3 rounded hover:bg-red-700">Hapus</button>
+          </div>
         </td>
       `;
 
