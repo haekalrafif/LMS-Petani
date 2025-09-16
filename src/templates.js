@@ -18,7 +18,11 @@ export function generateNavbarTemplate() {
 
         if (userData && userData.role === 'super admin') {
             superAdminLinkDesktop = `<a href="#/superadmin" class="hover:text-gray-200 transition-colors">Manajemen Pengguna</a>`;
-            superAdminLinkMobile = `<a href="#/superadmin" class="block px-4 py-2 text-white hover:bg-green-600">Manajemen Pengguna</a>`;
+            superAdminLinkMobile = `
+              <div class="px-4 py-2">
+                <a href="#/superadmin" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Manajemen Pengguna</a>
+              </div>
+            `;
         }
 
         return `

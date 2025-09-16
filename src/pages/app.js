@@ -104,6 +104,7 @@ class App {
         console.error('Error during page.afterRender():', error);
       }
     }
+    window.scrollTo(0, 0);
   }
 }
 
