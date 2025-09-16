@@ -42,6 +42,13 @@ class App {
 
     const publicRoutes = ['/login', '/register'];
     const token = localStorage.getItem('token');
+    
+    const mainContent = this._content;
+    if (publicRoutes.includes(matchedRoutePattern)) {
+      mainContent.className = '';
+    } else {
+      mainContent.className = 'pt-12 md:pt-16';
+    }
 
     if (!token && !publicRoutes.includes(matchedRoutePattern)) {
       window.location.hash = '#/login';

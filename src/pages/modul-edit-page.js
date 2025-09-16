@@ -10,7 +10,7 @@ const ModulEditPage = {
       const remainingChars = 155 - module.short_description.length;
       return `
         <div class="container mx-auto px-6 py-8">
-          <h2 class="text-3xl font-bold mb-8">Edit Modul</h2>
+          <h2 class="text-3xl font-bold mb-4">Edit Modul</h2>
           <form id="edit-module-form" class="bg-white p-8 rounded-lg shadow-md">
             <div class="mb-4">
               <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Modul</label>

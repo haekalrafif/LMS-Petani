@@ -4,7 +4,7 @@ const ModulAddPage = {
   async render() {
     return `
       <div class="container mx-auto px-6 py-8">
-        <h2 class="text-3xl font-bold mb-8">Tambah Modul Baru</h2>
+        <h2 class="text-3xl font-bold mb-4">Tambah Modul Baru</h2>
         <form id="add-module-form" class="bg-white p-8 rounded-lg shadow-md">
           <div class="mb-4">
             <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Modul</label>
