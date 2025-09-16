@@ -585,12 +585,6 @@
   .pt-12 {
     padding-top: calc(var(--spacing) * 12);
   }
-  .pt-20 {
-    padding-top: calc(var(--spacing) * 20);
-  }
-  .pt-24 {
-    padding-top: calc(var(--spacing) * 24);
-  }
   .pb-2 {
     padding-bottom: calc(var(--spacing) * 2);
   }
@@ -856,21 +850,6 @@
   .sm\:justify-end {
     @media (width >= 40rem) {
       justify-content: flex-end;
-    }
-  }
-  .md\:sticky {
-    @media (width >= 48rem) {
-      position: sticky;
-    }
-  }
-  .md\:top-24 {
-    @media (width >= 48rem) {
-      top: calc(var(--spacing) * 24);
-    }
-  }
-  .md\:block {
-    @media (width >= 48rem) {
-      display: block;
     }
   }
   .md\:flex {

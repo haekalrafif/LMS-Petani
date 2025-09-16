@@ -51,12 +51,19 @@ export function generateNavbarTemplate() {
                 </div>
               </div>
               <div id="mobile-menu" class="hidden md:hidden">
-                <nav class="pt-4 pb-2 text-right">
-                  ${userData && userData.role !== 'teacher' && userData.role !== 'super admin' ? `<a href="#/dasbor" class="block px-4 py-2 text-white hover:bg-green-600">Dasbor</a>` : ''}
-                  <a href="#/modul" class="block px-4 py-2 text-white hover:bg-green-600">Modul</a>
+                <nav class="pt-4 pb-2">
+                  ${userData && userData.role !== 'teacher' && userData.role !== 'super admin' ? `
+                  <div class="px-4 py-2">
+                    <a href="#/dasbor" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Dasbor</a>
+                  </div>
+                  ` : ''}
+                  <div class="px-4 py-2">
+                    <a href="#/modul" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Modul</a>
+                  </div>
                   ${superAdminLinkMobile}
-                  <a href="#" id="logout-button-mobile" class="block px-4 py-2 text-white hover:bg-green-600">Logout</a>
-                </nav>
+                  <div class="px-4 py-2">
+                    <a href="#" id="logout-button-mobile" class="block w-full text-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Logout</a>
+                  </div>
               </div>
             </div>
           </div>
