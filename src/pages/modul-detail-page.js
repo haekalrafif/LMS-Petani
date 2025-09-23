@@ -72,7 +72,7 @@ class ModulDetailPage {
 
                 ${isModuleAuthor ? `
                 <div class="mt-4">
-                    <a href="#/modul/${this._module.id}/tambah-topik" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors block text-center">
+                    <a href="#/modul/${this._module.id}/tambah-topik" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors block text-center">
                     Tambah Topik Baru
                     </a>
                 </div>
