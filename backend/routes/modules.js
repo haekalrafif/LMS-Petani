@@ -73,17 +73,64 @@ router.get('/:id', async (req, res) => {
         }
         const moduleData = modules[0];
 
-        const [materials] = await db.query('SELECT * FROM materials WHERE module_id = ? ORDER BY created_at ASC', [req.params.id]);
+        const [topics] = await db.query(
+            'SELECT * FROM topics WHERE module_id = ? ORDER BY position ASC', 
+            [req.params.id]
+        );
+
+        const [materials] = await db.query(
+            'SELECT * FROM materials WHERE module_id = ? ORDER BY created_at ASC', 
+            [req.params.id]
+        );
+
+        const topicsWithMaterials = topics.map(topic => ({
+            ...topic,
+            materials: materials.filter(material => material.topic_id === topic.id)
+        }));
 
         const response = {
             ...moduleData,
-            materials: materials
+            topics: topicsWithMaterials
         };
 
         res.json(response);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.post('/:moduleId/topics', protect, isTeacher, async (req, res) => {
+    const { moduleId } = req.params;
+    const { title } = req.body;
+    const author_id = req.user.id;
+
+    if (!title) {
+        return res.status(400).json({ message: 'Judul topik tidak boleh kosong.' });
+    }
+
+    try {
+        const [modules] = await db.query('SELECT author_id FROM modules WHERE id = ?', [moduleId]);
+        if (modules.length === 0 || modules[0].author_id !== author_id) {
+            return res.status(403).json({ message: 'Tidak diizinkan menambah topik pada modul ini.' });
+        }
+
+        const [[{ max_position }]] = await db.query(
+            'SELECT COALESCE(MAX(position), 0) as max_position FROM topics WHERE module_id = ?',
+            [moduleId]
+        );
+        const newPosition = max_position + 1;
+
+        const [result] = await db.query(
+            'INSERT INTO topics (module_id, title, position) VALUES (?, ?, ?)',
+            [moduleId, title, newPosition]
+        );
+
+        res.status(201).json({ message: 'Topik berhasil ditambahkan', topicId: result.insertId });
+
+    } catch (error) {
+        console.error('Error saat menambah topik:', error);
+        res.status(500).json({ message: 'Server error saat menambah topik.' });
     }
 });
 

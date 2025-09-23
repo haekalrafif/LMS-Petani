@@ -8,6 +8,7 @@ import ModulMateriEditPage from './pages/modul-materi-edit-page.js';
 import ModulEditPage from './pages/modul-edit-page.js';
 import RegisterPage from './pages/register-page.js';
 import SuperAdminPage from './pages/superadmin-page.js';
+import TopicAddPage from './pages/topic-add-page.js';
 
 export const routes = {
   '/': DasborPage,
@@ -19,6 +20,8 @@ export const routes = {
   '/modul-add': ModulAddPage,
   '/modul-edit/:id': ModulEditPage,
   '/modul/:id/tambah-materi': ModulMateriAddPage,
+  '/modul/:moduleId/topic/:topicId/tambah-materi': ModulMateriAddPage,
+  '/modul/:id/tambah-topik': TopicAddPage,
   '/modul/:moduleId/materi-edit/:materialId': ModulMateriEditPage,
   '/superadmin': SuperAdminPage,
 };

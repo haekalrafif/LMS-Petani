@@ -43,6 +43,7 @@ const apiFetch = async (endpoint, options = {}) => {
 export const getModules = () => apiFetch('/modules');
 export const getModule = (id) => apiFetch(`/modules/${id}`);
 export const createModule = (moduleData) => apiFetch('/modules', { method: 'POST', body: moduleData }); 
+export const createTopic = (moduleId, topicData) => apiFetch(`/modules/${moduleId}/topics`, { method: 'POST', body: JSON.stringify(topicData) });
 export const createMaterial = (moduleId, materialData) => apiFetch(`/modules/${moduleId}/materials`, { method: 'POST', body: materialData }); 
 export const updateModule = (id, moduleData) => apiFetch(`/modules/${id}`, { method: 'PUT', body: moduleData }); 
 export const deleteModule = (id) => apiFetch(`/modules/${id}`, { method: 'DELETE' });

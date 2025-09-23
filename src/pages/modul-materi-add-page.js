@@ -2,7 +2,8 @@ import { createMaterial, getModule } from '../utils/api.js';
 
 const ModulMateriAddPage = {
   async render() {
-    const moduleId = window.location.hash.split('/')[2];
+    const urlParts = window.location.hash.split('/');
+    const moduleId = urlParts[2];
     const module = await getModule(moduleId);
 
     return `
@@ -38,7 +39,9 @@ const ModulMateriAddPage = {
   async afterRender() {
     const form = document.querySelector('#add-material-form');
     const errorMessage = document.querySelector('#error-message');
-    const moduleId = window.location.hash.split('/')[2];
+    const urlParts = window.location.hash.split('/');
+    const moduleId = urlParts[2];
+    const topicId = urlParts[4]; 
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -51,6 +54,7 @@ const ModulMateriAddPage = {
       const formData = new FormData();
       formData.append('title', title);
       formData.append('content', content);
+      formData.append('topic_id', topicId); 
       if (imageFile) {
         formData.append('image', imageFile);
       }
