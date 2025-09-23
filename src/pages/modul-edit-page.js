@@ -9,7 +9,7 @@ const ModulEditPage = {
       const module = await getModule(id);
       const remainingChars = 155 - module.short_description.length;
       return `
-        <div class="container mx-auto py-8">
+        <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
           <h2 class="text-3xl font-bold mb-4">Edit Modul</h2>
           <form id="edit-module-form" class="bg-white p-8 rounded-lg shadow-md">
             <div class="mb-4">
@@ -41,7 +41,7 @@ const ModulEditPage = {
         </div>
       `;
     } catch (error) {
-        return `<div class="container mx-auto py-8"><p class="text-red-500">Error loading module for editing: ${error.message}</p></div>`;
+        return `<div class="container mx-auto py-8 px-10 md:px-20 lg:px-40"><p class="text-red-500">Error loading module for editing: ${error.message}</p></div>`;
     }
   },
 

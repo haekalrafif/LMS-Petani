@@ -27,7 +27,7 @@ export function generateNavbarTemplate() {
 
         return `
           <div class="bg-green-700 text-white">
-            <div class="container mx-auto px-6 py-3">
+            <div class="container mx-auto py-3 px-10 md:px-20 lg:px-40">
               <div class="flex items-center justify-between">
                 <h1 class="text-xl font-bold flex items-center gap-2">
                   LMS Petani Desa Tosari

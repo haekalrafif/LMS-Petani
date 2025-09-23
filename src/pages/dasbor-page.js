@@ -12,15 +12,17 @@ const DasborPage = {
           ${module.image_url ? `<img src="${module.image_url}" alt="Gambar Modul" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-500">Tidak Ada Gambar</span></div>`}
         </div>
         <div class="p-5 flex flex-col flex-grow">
-          <h3 class="text-lg font-bold text-brand-dark mb-2">${module.title}</h3>
-          <p class="text-xs text-gray-500 mb-4">Oleh: ${module.author}</p>
+          <div class="flex-grow">
+            <h3 class="text-lg font-bold text-brand-dark mb-2">${module.title}</h3>
+            <p class="text-xs text-gray-500 mb-4">Oleh: ${module.author}</p>
+          </div>
           <div class="mb-4">
             <p class="text-xs font-bold text-gray-900 mb-1">${percentage}% Selesai</p>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
               <div class="bg-green-700 h-2.5 rounded-full" style="width: ${percentage}%"></div>
             </div>
           </div>
-          <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors mt-auto">
+          <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors">
             Pelajari
           </a>
         </div>
@@ -43,7 +45,7 @@ const DasborPage = {
       const completedModules = modulesWithProgress.filter(m => m.percentage === 100);
 
       return `
-        <div class="container mx-auto py-8">
+        <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
           <h2 class="text-3xl font-bold mb-4">Dasbor</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -90,7 +92,7 @@ const DasborPage = {
         </div>
       `;
     } catch (error) {
-      return `<div class="container mx-auto py-8"><p class="text-red-500">Error memuat dasbor: ${error.message}</p></div>`;
+      return `<div class="container mx-auto py-8 px-10 md:px-20 lg:px-40"><p class="text-red-500">Error memuat dasbor: ${error.message}</p></div>`;
     }
   },
 

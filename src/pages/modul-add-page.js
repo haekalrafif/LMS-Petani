@@ -3,7 +3,7 @@ import { createModule } from '../utils/api.js';
 const ModulAddPage = {
   async render() {
     return `
-      <div class="container mx-auto py-8">
+      <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
         <h2 class="text-3xl font-bold mb-4">Tambah Modul Baru</h2>
         <form id="add-module-form" class="bg-white p-8 rounded-lg shadow-md">
           <div class="mb-4">

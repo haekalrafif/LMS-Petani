@@ -1,7 +1,7 @@
 const RegisterPage = {
   async render() {
     return `
-      <div class="flex items-center justify-center min-h-screen bg-gray-100">
+      <div class="flex items-center justify-center min-h-screen bg-gray-100 px-10 md:px-20 lg:px-40">
         <div class="px-12 py-10 text-left bg-white shadow-lg rounded-lg w-full max-w-md">
           <h3 class="text-2xl font-bold text-center">Buat Akun</h3>
           <form id="register-form" class="mt-4">

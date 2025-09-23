@@ -13,7 +13,7 @@ const ModulPage = {
         : '';
 
       return `
-        <div class="container mx-auto py-8">
+        <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-bold">Modul</h2>
             ${teacherButton}
@@ -25,7 +25,7 @@ const ModulPage = {
         </div>
       `;
     } catch (error) {
-      return `<div class="container mx-auto py-8"><p class="text-red-500">Error loading modules: ${error.message}</p></div>`;
+      return `<div class="container mx-auto py-8 px-10 md:px-20 lg:px-40"><p class="text-red-500">Error loading modules: ${error.message}</p></div>`;
     }
   },
 
@@ -63,9 +63,11 @@ const ModulPage = {
             ${module.image_url ? `<img src="${module.image_url}" alt="Gambar Modul" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-500">Tidak Ada Gambar</span></div>`}
         </div>
         <div class="p-5 flex flex-col flex-grow">
-          <h3 class="text-lg font-bold text-brand-dark mb-0">${module.title}</h3>
-          <p class="text-xs text-gray-500 mb-2">Oleh: ${module.author}</p>
-          <p class="text-sm text-gray-700 mb-2 flex-grow">${module.short_description}</p>
+          <div class="flex-grow">
+            <h3 class="text-lg font-bold text-brand-dark mb-0">${module.title}</h3>
+            <p class="text-xs text-gray-500 mb-2">Oleh: ${module.author}</p>
+            <p class="text-sm text-gray-700 mb-2">${module.short_description}</p>
+          </div>
           ${progressBarHtml} 
           <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors mt-auto">
             ${isTeacher ? 'Detail' : 'Pelajari'}
