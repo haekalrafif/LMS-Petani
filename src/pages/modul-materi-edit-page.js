@@ -10,7 +10,7 @@ const ModulMateriEditPage = {
       const material = await getMaterialById(moduleId, materialId);
 
       return `
-        <div class="container mx-auto px-6 py-8">
+        <div class="container mx-auto py-8">
           <h2 class="text-3xl font-bold mb-4">Edit Materi: ${material.title}</h2>
           <form id="edit-material-form" class="bg-white p-8 rounded-lg shadow-md">
             <div class="mb-4">
@@ -40,7 +40,7 @@ const ModulMateriEditPage = {
         </div>
       `;
     } catch (error) {
-      return `<div class="container mx-auto px-6 py-8"><p class="text-red-500">Error loading material for editing: ${error.message}</p></div>`;
+      return `<div class="container mx-auto py-8"><p class="text-red-500">Error loading material for editing: ${error.message}</p></div>`;
     }
   },
 

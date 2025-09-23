@@ -43,7 +43,7 @@ const DasborPage = {
       const completedModules = modulesWithProgress.filter(m => m.percentage === 100);
 
       return `
-        <div class="container mx-auto px-6 py-8">
+        <div class="container mx-auto py-8">
           <h2 class="text-3xl font-bold mb-4">Dasbor</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -90,7 +90,7 @@ const DasborPage = {
         </div>
       `;
     } catch (error) {
-      return `<div class="container mx-auto px-6 py-8"><p class="text-red-500">Error memuat dasbor: ${error.message}</p></div>`;
+      return `<div class="container mx-auto py-8"><p class="text-red-500">Error memuat dasbor: ${error.message}</p></div>`;
     }
   },
 

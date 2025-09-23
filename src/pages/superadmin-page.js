@@ -4,13 +4,13 @@ const SuperAdminPage = {
   async render() {
     const user = getCurrentUser();
     if (!user || user.role !== 'super admin') {
-      return `<div class="container mx-auto px-6 py-8"><p class="text-red-500">Akses ditolak. Halaman ini hanya untuk Super Admin.</p></div>`;
+      return `<div class="container mx-auto py-8"><p class="text-red-500">Akses ditolak. Halaman ini hanya untuk Super Admin.</p></div>`;
     }
 
     try {
       const users = await getAllUsers();
       return `
-        <div class="container mx-auto px-6 py-8">
+        <div class="container mx-auto py-8">
           <h2 class="text-3xl font-bold mb-8">Manajemen Pengguna</h2>
           <div class="bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full leading-normal">
@@ -29,7 +29,7 @@ const SuperAdminPage = {
         </div>
       `;
     } catch (error) {
-      return `<div class="container mx-auto px-6 py-8"><p class="text-red-500">Error memuat pengguna: ${error.message}</p></div>`;
+      return `<div class="container mx-auto py-8"><p class="text-red-500">Error memuat pengguna: ${error.message}</p></div>`;
     }
   },
 

@@ -6,7 +6,7 @@ const ModulMateriAddPage = {
     const module = await getModule(moduleId);
 
     return `
-      <div class="container mx-auto px-6 py-8">
+      <div class="container mx-auto py-8">
         <h2 class="text-3xl font-bold mb-4">Tambah Materi Baru untuk Modul ${module.title}</h2>
         <form id="add-material-form" class="bg-white p-8 rounded-lg shadow-md">
           <div class="mb-4">

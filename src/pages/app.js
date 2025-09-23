@@ -44,10 +44,12 @@ class App {
     const token = localStorage.getItem('token');
     
     const mainContent = this._content;
+    const paddingClasses = 'px-10 md:px-20 lg:px-40';
+
     if (publicRoutes.includes(matchedRoutePattern)) {
-      mainContent.className = '';
+      mainContent.className = paddingClasses;
     } else {
-      mainContent.className = 'pt-12 md:pt-16';
+      mainContent.className = `pt-12 md:pt-16 ${paddingClasses}`;
     }
 
     if (!token && !publicRoutes.includes(matchedRoutePattern)) {

@@ -13,7 +13,7 @@ const ModulPage = {
         : '';
 
       return `
-        <div class="container mx-auto px-6 py-8">
+        <div class="container mx-auto py-8">
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-bold">Modul</h2>
             ${teacherButton}
@@ -25,7 +25,7 @@ const ModulPage = {
         </div>
       `;
     } catch (error) {
-      return `<div class="container mx-auto px-6 py-8"><p class="text-red-500">Error loading modules: ${error.message}</p></div>`;
+      return `<div class="container mx-auto py-8"><p class="text-red-500">Error loading modules: ${error.message}</p></div>`;
     }
   },
 
