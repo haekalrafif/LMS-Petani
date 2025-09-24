@@ -3,12 +3,12 @@ import { getModules, deleteModule, getCurrentUser } from '../utils/api.js';
 const ModulPage = {
   async render() {
     const user = getCurrentUser();
-    const isTeacher = user && user.role === 'teacher';
+    const isTeacherOrSuperAdmin = user && (user.role === 'teacher' || user.role === 'super admin');
 
     try {
       const modules = await getModules();
       
-      const teacherButton = isTeacher 
+      const teacherButton = isTeacherOrSuperAdmin 
         ? `<a href="#/modul-add" class="bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors">Tambah Modul</a>`
         : '';
 
@@ -20,7 +20,7 @@ const ModulPage = {
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            ${modules.map(module => this.createModuleCard(module, isTeacher)).join('')}
+            ${modules.map(module => this.createModuleCard(module, isTeacherOrSuperAdmin)).join('')}
           </div>
         </div>
       `;
@@ -29,8 +29,8 @@ const ModulPage = {
     }
   },
 
-  createModuleCard(module, isTeacher) {
-    const teacherControls = isTeacher
+  createModuleCard(module, isTeacherOrSuperAdmin) {
+    const teacherControls = isTeacherOrSuperAdmin
       ? `
         <div class="p-5 pt-0">
             <div class="flex gap-4">
@@ -42,7 +42,7 @@ const ModulPage = {
       : '';
 
     let progressBarHtml = '';
-    if (!isTeacher && module.total_materials !== undefined && module.completed_materials !== undefined) {
+    if (!isTeacherOrSuperAdmin && module.total_materials !== undefined && module.completed_materials !== undefined) {
       const total = module.total_materials;
       const completed = module.completed_materials;
       const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -70,17 +70,17 @@ const ModulPage = {
           </div>
           ${progressBarHtml} 
           <a href="#/modul-detail/${module.id}" class="block text-center w-full bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors mt-auto">
-            ${isTeacher ? 'Detail' : 'Pelajari'}
+            ${isTeacherOrSuperAdmin ? 'Detail' : 'Pelajari'}
           </a>
         </div>
         ${teacherControls}
       </div>
     `;
-},
+  },
 
   async afterRender() {
     const user = getCurrentUser();
-    if (user && user.role === 'teacher') {
+    if (user && (user.role === 'teacher' || user.role === 'super admin')) {
       const deleteButtons = document.querySelectorAll('.delete-btn');
       deleteButtons.forEach(button => {
         button.addEventListener('click', async (e) => {

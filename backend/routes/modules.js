@@ -111,7 +111,7 @@ router.post('/:moduleId/topics', protect, isTeacher, async (req, res) => {
 
     try {
         const [modules] = await db.query('SELECT author_id FROM modules WHERE id = ?', [moduleId]);
-        if (modules.length === 0 || modules[0].author_id !== author_id) {
+        if (modules.length === 0 || (modules[0].author_id !== author_id && req.user.role !== 'super admin')) {
             return res.status(403).json({ message: 'Tidak diizinkan menambah topik pada modul ini.' });
         }
 
@@ -177,7 +177,7 @@ router.put('/:id', protect, isTeacher, upload.single('image'), async (req, res) 
             return res.status(404).json({ message: 'Module not found' });
         }
 
-        if (modules[0].author_id !== author_id) {
+        if (modules[0].author_id !== author_id && req.user.role !== 'super admin') {
             return res.status(403).json({ message: 'User not authorized to update this module' });
         }
 
@@ -204,6 +204,7 @@ router.put('/:id', protect, isTeacher, upload.single('image'), async (req, res) 
 router.delete('/:id', protect, isTeacher, async (req, res) => {
     const moduleId = req.params.id;
     const author_id = req.user.id;
+    const user_role = req.user.role;
 
     try {
         const [modules] = await db.query('SELECT * FROM modules WHERE id = ?', [moduleId]);
@@ -211,7 +212,7 @@ router.delete('/:id', protect, isTeacher, async (req, res) => {
             return res.status(404).json({ message: 'Module not found' });
         }
 
-        if (modules[0].author_id !== author_id) {
+        if (modules[0].author_id !== author_id && user_role !== 'super admin') {
             return res.status(403).json({ message: 'User not authorized to delete this module' });
         }
 

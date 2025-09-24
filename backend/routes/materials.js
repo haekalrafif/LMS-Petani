@@ -17,7 +17,7 @@ router.post('/:moduleId/materials', protect, isTeacher, upload.single('image'), 
 
     try {
         const [modules] = await db.query('SELECT author_id FROM modules WHERE id = ?', [moduleId]);
-        if (modules.length === 0 || modules[0].author_id !== author_id) {
+        if (modules.length === 0 || (modules[0].author_id !== author_id && req.user.role !== 'super admin')) {
             return res.status(403).json({ message: 'Tidak diizinkan menambah materi pada modul ini.' });
         }
 
@@ -51,7 +51,7 @@ router.get('/:moduleId/materials/:materialId', protect, isTeacher, async (req, r
         const material = materials[0];
 
         const [modules] = await db.query('SELECT author_id FROM modules WHERE id = ?', [moduleId]);
-        if (modules.length === 0 || modules[0].author_id !== author_id) {
+        if (modules.length === 0 || (modules[0].author_id !== author_id && req.user.role !== 'super admin')) {
             return res.status(403).json({ message: 'User not authorized to view this material for editing.' });
         }
 
@@ -80,7 +80,7 @@ router.put('/:moduleId/materials/:materialId', protect, isTeacher, upload.single
         const existingMaterial = materials[0];
 
         const [modules] = await db.query('SELECT author_id FROM modules WHERE id = ?', [moduleId]);
-        if (modules.length === 0 || modules[0].author_id !== author_id) {
+        if (modules.length === 0 || (modules[0].author_id !== author_id && req.user.role !== 'super admin')) {
             return res.status(403).json({ message: 'User not authorized to update this material.' });
         }
 

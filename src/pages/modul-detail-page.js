@@ -41,8 +41,8 @@ class ModulDetailPage {
         }
     }
 
-    const isTeacher = this._user && this._user.role === 'teacher';
-    const isModuleAuthor = this._user && this._user.id === this._module.author_id;
+    const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
+    const isModuleAuthor = this._user && (this._user.id === this._module.author_id || this._user.role === 'super admin');
     const { percentage } = this._calculateProgress();
 
     return `
@@ -286,8 +286,8 @@ class ModulDetailPage {
   _createMaterialContent(material) {
     if (!material) return '<div class="bg-white p-6 rounded-lg shadow-md"><p class="text-gray-500">Materi tidak ditemukan.</p></div>';
 
-    const isTeacher = this._user && this._user.role === 'teacher';
-    const isModuleAuthor = this._user && this._user.id === this._module.author_id;
+    const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
+    const isModuleAuthor = this._user && (this._user.id === this._module.author_id || this._user.role === 'super admin');
     const isCompleted = this._completedMaterials.includes(material.id);
 
     let completeButtonHtml = '';
