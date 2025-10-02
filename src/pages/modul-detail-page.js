@@ -18,7 +18,7 @@ class ModulDetailPage {
         this._user = getCurrentUser();
         const [moduleData, progressData] = await Promise.all([
         getModule(moduleId),
-        this._user && this._user.role !== 'teacher' ? getModuleProgress(moduleId) : Promise.resolve({ completedMaterialIds: [] })
+        this._user && this._user.role !== 'teacher' && this._user.role !== 'super admin' ? getModuleProgress(moduleId) : Promise.resolve({ completedMaterialIds: [] })
         ]);
         
         this._module = moduleData;
@@ -138,7 +138,7 @@ class ModulDetailPage {
   }
 
   _isMaterialUnlocked(materialId) {
-    if (this._user && this._user.role === 'teacher') return true;
+    if (this._user && (this._user.role === 'teacher' || this._user.role === 'super admin')) return true;
     const materialIndex = this._allMaterials.findIndex(m => m.id === materialId);
     if (materialIndex === -1) return false;
     if (materialIndex === 0) return true;
