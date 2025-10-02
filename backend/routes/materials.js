@@ -7,11 +7,11 @@ const { uploadToCloudinary } = require('../config/cloudinary');
 
 router.post('/:moduleId/materials', protect, isTeacher, upload.single('image'), async (req, res) => {
     const { moduleId } = req.params;
-    const { title, content, topic_id } = req.body; 
+    const { title, content, topic_id, youtube_url } = req.body;
     const author_id = req.user.id;
     let image_url = null;
 
-    if (!title || !content || !topic_id) { 
+    if (!title || !content || !topic_id) {
         return res.status(400).json({ message: 'Judul, konten, dan topik ID harus diisi.' });
     }
 
@@ -27,8 +27,8 @@ router.post('/:moduleId/materials', protect, isTeacher, upload.single('image'), 
         }
         
         const [result] = await db.query(
-            'INSERT INTO materials (module_id, topic_id, title, content, image_url) VALUES (?, ?, ?, ?, ?)',
-            [moduleId, topic_id, title, content, image_url]
+            'INSERT INTO materials (module_id, topic_id, title, content, image_url, youtube_url) VALUES (?, ?, ?, ?, ?, ?)',
+            [moduleId, topic_id, title, content, image_url, youtube_url]
         );
 
         res.status(201).json({ message: 'Materi berhasil ditambahkan', materialId: result.insertId });
@@ -64,7 +64,7 @@ router.get('/:moduleId/materials/:materialId', protect, isTeacher, async (req, r
 
 router.put('/:moduleId/materials/:materialId', protect, isTeacher, upload.single('image'), async (req, res) => {
     const { moduleId, materialId } = req.params;
-    const { title, content } = req.body;
+    const { title, content, youtube_url } = req.body;
     const author_id = req.user.id;
     let image_url = null; 
 
@@ -92,8 +92,8 @@ router.put('/:moduleId/materials/:materialId', protect, isTeacher, upload.single
         }
 
         const [result] = await db.query(
-            'UPDATE materials SET title = ?, content = ?, image_url = ? WHERE id = ? AND module_id = ?',
-            [title, content, image_url, materialId, moduleId]
+            'UPDATE materials SET title = ?, content = ?, image_url = ?, youtube_url = ? WHERE id = ? AND module_id = ?',
+            [title, content, image_url, youtube_url, materialId, moduleId]
         );
 
         if (result.affectedRows === 0) {

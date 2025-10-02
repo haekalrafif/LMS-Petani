@@ -9,6 +9,19 @@ class ModulDetailPage {
     this._allMaterials = [];
   }
 
+  _getYouTubeEmbedUrl(url) {
+    if (!url) return null;
+    let videoId;
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    } else if (url.includes('watch?v=')) {
+      videoId = url.split('watch?v=')[1].split('&')[0];
+    } else {
+      return null;
+    }
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+
   async render() {
     const urlParts = window.location.hash.split('/');
     const moduleId = urlParts[2];
@@ -149,6 +162,7 @@ class ModulDetailPage {
 
   _getFirstUncompletedMaterialId() {
     if (!this._allMaterials || this._allMaterials.length === 0) return null;
+    if (this._user && this._user.role === 'super admin') return this._allMaterials[0].id;
     for (const material of this._allMaterials) {
         if (!this._completedMaterials.includes(material.id)) {
             return material.id;
@@ -299,6 +313,8 @@ class ModulDetailPage {
         }
     }
 
+    const embedUrl = this._getYouTubeEmbedUrl(material.youtube_url);
+
     return `
       <div class="bg-white p-6 rounded-lg shadow-md">
         <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
@@ -308,6 +324,11 @@ class ModulDetailPage {
             ${completeButtonHtml}
           </div>
         </div><hr class="my-4 border-t border-gray-200" />
+        ${embedUrl ? `
+          <div class="mb-4">
+            <iframe class="w-full aspect-video rounded-lg" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        ` : ''}
         ${material.image_url ? `<img src="${material.image_url}" alt="${material.title}" class="w-full max-h-96 object-cover rounded-lg mb-4 shadow">` : ''}
         <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">${material.content}</p>
       </div>
