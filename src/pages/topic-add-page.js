@@ -12,7 +12,7 @@ const TopicAddPage = {
             <input type="text" id="title" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
           </div>
           <div class="flex items-center justify-between">
-            <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            <button type="submit" id="save-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Simpan Topik
             </button>
             <a href="#/modul-detail/${moduleId}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -29,10 +29,15 @@ const TopicAddPage = {
     const form = document.querySelector('#add-topic-form');
     const errorMessage = document.querySelector('#error-message');
     const moduleId = window.location.hash.split('/')[2];
+    const saveButton = document.querySelector('#save-button');
+    const loadingOverlay = document.querySelector('#loading-overlay');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.textContent = '';
+
+      saveButton.disabled = true;
+      loadingOverlay.classList.remove('hidden');
 
       const title = form.title.value;
       
@@ -42,6 +47,9 @@ const TopicAddPage = {
         window.location.hash = `#/modul-detail/${moduleId}`;
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
+        saveButton.disabled = false;
+      } finally {
+        loadingOverlay.classList.add('hidden');
       }
     });
   },

@@ -27,7 +27,7 @@ const ModulMateriAddPage = {
             <textarea id="content" name="content" rows="10" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"></textarea>
           </div>
           <div class="flex items-center justify-between">
-            <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            <button type="submit" id="save-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Simpan Materi
             </button>
             <a href="#/modul-detail/${moduleId}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -46,10 +46,15 @@ const ModulMateriAddPage = {
     const urlParts = window.location.hash.split('/');
     const moduleId = urlParts[2];
     const topicId = urlParts[4]; 
+    const saveButton = document.querySelector('#save-button');
+    const loadingOverlay = document.querySelector('#loading-overlay');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.textContent = '';
+      
+      saveButton.disabled = true;
+      loadingOverlay.classList.remove('hidden');
 
       const title = form.title.value;
       const content = form.content.value;
@@ -73,6 +78,9 @@ const ModulMateriAddPage = {
         window.location.hash = `#/modul-detail/${moduleId}`;
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
+        saveButton.disabled = false;
+      } finally {
+        loadingOverlay.classList.add('hidden');
       }
     });
   },

@@ -16,7 +16,7 @@ const RegisterPage = {
                 class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
             </div>
             <div class="flex items-baseline justify-between">
-              <button type="submit" class="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900">Daftar</button>
+              <button type="submit" id="register-button" class="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900">Daftar</button>
               <a href="#/login" class="text-sm text-blue-600 hover:underline">Sudah punya akun?</a>
             </div>
             <div id="error-message" class="mt-4 text-red-600"></div>
@@ -29,12 +29,17 @@ const RegisterPage = {
   async afterRender() {
     const form = document.querySelector('#register-form');
     const errorMessage = document.querySelector('#error-message');
+    const registerButton = document.querySelector('#register-button');
+    const loadingOverlay = document.querySelector('#loading-overlay');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.querySelector('#username').value;
       const password = document.querySelector('#password').value;
       errorMessage.textContent = '';
+
+      registerButton.disabled = true;
+      loadingOverlay.classList.remove('hidden');
 
       try {
         const response = await fetch('http://localhost:5000/api/auth/register', {
@@ -56,6 +61,9 @@ const RegisterPage = {
 
       } catch (error) {
         errorMessage.textContent = error.message;
+        registerButton.disabled = false;
+      } finally {
+        loadingOverlay.classList.add('hidden');
       }
     });
   },

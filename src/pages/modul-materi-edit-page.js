@@ -32,7 +32,7 @@ const ModulMateriEditPage = {
               <textarea id="content" name="content" rows="10" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">${material.content}</textarea>
             </div>
             <div class="flex items-center justify-between">
-              <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+              <button type="submit" id="update-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                 Update Materi
               </button>
               <a href="#/modul-detail/${moduleId}/${materialId}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -54,10 +54,15 @@ const ModulMateriEditPage = {
     const materialId = urlParts[4];
     const form = document.querySelector('#edit-material-form');
     const errorMessage = document.querySelector('#error-message');
+    const updateButton = document.querySelector('#update-button');
+    const loadingOverlay = document.querySelector('#loading-overlay');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.textContent = '';
+
+      updateButton.disabled = true;
+      loadingOverlay.classList.remove('hidden');
 
       const title = form.title.value;
       const content = form.content.value;
@@ -80,6 +85,9 @@ const ModulMateriEditPage = {
         window.location.hash = `#/modul-detail/${moduleId}/${materialId}`;
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
+        updateButton.disabled = false;
+      } finally {
+        loadingOverlay.classList.add('hidden');
       }
     });
   },

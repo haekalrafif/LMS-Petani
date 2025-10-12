@@ -21,7 +21,7 @@ const ModulAddPage = {
             <input type="file" id="image" name="image" accept="image/jpeg" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
           </div>
           <div class="flex items-center justify-between">
-            <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            <button type="submit" id="save-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Simpan Modul
             </button>
             <a href="#/modul" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -39,6 +39,8 @@ const ModulAddPage = {
     const errorMessage = document.querySelector('#error-message');
     const shortDescriptionInput = document.querySelector('#short_description');
     const charCount = document.querySelector('#char-count');
+    const saveButton = document.querySelector('#save-button');
+    const loadingOverlay = document.querySelector('#loading-overlay');
 
     shortDescriptionInput.addEventListener('input', () => {
       const remaining = 155 - shortDescriptionInput.value.length;
@@ -48,6 +50,9 @@ const ModulAddPage = {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.textContent = '';
+
+      saveButton.disabled = true;
+      loadingOverlay.classList.remove('hidden');
 
       const title = form.title.value;
       const short_description = form.short_description.value; 
@@ -64,6 +69,9 @@ const ModulAddPage = {
         window.location.hash = '#/modul';
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
+        saveButton.disabled = false;
+      } finally {
+        loadingOverlay.classList.add('hidden');
       }
     });
   },

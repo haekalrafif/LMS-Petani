@@ -16,7 +16,7 @@ const LoginPage = {
                 class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
             </div>
             <div class="flex items-baseline justify-between">
-              <button type="submit" class="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900">Masuk</button>
+              <button type="submit" id="login-button" class="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900">Masuk</button>
               <a href="#/register" class="text-sm text-blue-600 hover:underline">Daftar</a>
             </div>
             <div id="error-message" class="mt-4 text-red-600"></div>
@@ -29,12 +29,17 @@ const LoginPage = {
   async afterRender() {
     const loginForm = document.querySelector('#login-form');
     const errorMessage = document.querySelector('#error-message');
+    const loginButton = document.querySelector('#login-button');
+    const loadingOverlay = document.querySelector('#loading-overlay');
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.querySelector('#username').value;
       const password = document.querySelector('#password').value;
       errorMessage.textContent = ''; 
+      
+      loginButton.disabled = true;
+      loadingOverlay.classList.remove('hidden');
 
       try {
         const response = await fetch('http://localhost:5000/api/auth/login', {
@@ -64,6 +69,9 @@ const LoginPage = {
 
       } catch (error) {
         errorMessage.textContent = error.message;
+        loginButton.disabled = false;
+      } finally {
+        loadingOverlay.classList.add('hidden');
       }
     });
   },
