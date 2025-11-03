@@ -140,11 +140,11 @@ router.post('/', protect, isTeacher, upload.single('image'), async (req, res) =>
     let image_url = null;
 
     if (!title || !short_description) {
-        return res.status(400).json({ message: 'Please provide title and short description.' });
+        return res.status(400).json({ message: 'Mohon tambahkan judul dan deskripsi singkat.' });
     }
     
     if (!req.file) {
-        return res.status(400).json({ message: 'A module image is required.' });
+        return res.status(400).json({ message: 'Gambar modul dibutuhkan.' });
     }
 
     try {
@@ -155,7 +155,7 @@ router.post('/', protect, isTeacher, upload.single('image'), async (req, res) =>
             'INSERT INTO modules (title, short_description, image_url, author_id) VALUES (?, ?, ?, ?)',
             [title, short_description, image_url, author_id]
         );
-        res.status(201).json({ message: 'Module created successfully', moduleId: result.insertId });
+        res.status(201).json({ message: 'Modul sukses dibuat!', moduleId: result.insertId });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error during module creation or image upload.' });
@@ -168,7 +168,7 @@ router.put('/:id', protect, isTeacher, upload.single('image'), async (req, res) 
     const author_id = req.user.id;
 
     if (!title || !short_description) {
-        return res.status(400).json({ message: 'Please provide title and short description.' });
+        return res.status(400).json({ message: 'Mohon tambahkan judul dan deskripsi singkat.' });
     }
 
     try {
@@ -217,7 +217,7 @@ router.delete('/:id', protect, isTeacher, async (req, res) => {
         }
 
         await db.query('DELETE FROM modules WHERE id = ?', [moduleId]);
-        res.json({ message: 'Module deleted successfully' });
+        res.json({ message: 'Module berhasil dihapus' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
