@@ -47,7 +47,7 @@ class App {
     if (publicRoutes.includes(matchedRoutePattern)) {
       mainContent.className = '';
     } else {
-      mainContent.className = 'pt-12 md:pt-16';
+      mainContent.className = 'pt-16';
     }
 
     if (!token && !publicRoutes.includes(matchedRoutePattern)) {
