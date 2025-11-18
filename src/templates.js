@@ -28,7 +28,7 @@ export function generateNavbarTemplate() {
         return `
           <div class="bg-green-700 text-white">
             <div class="container mx-auto py-3 px-10 md:px-20 lg:px-40">
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-4">
                 <h1 class="text-xl font-bold flex items-center gap-2">
                   LMS Petani Desa Tosari
                   ${userData && userData.role === 'teacher' ? `<span class="text-sm bg-yellow-600 px-2 py-1 rounded-full">Teacher</span>` : ''}

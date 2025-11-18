@@ -13,18 +13,14 @@ const SuperAdminPage = {
         <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
           <h2 class="text-3xl font-bold mb-8">Manajemen Pengguna</h2>
           <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="min-w-full leading-normal">
-              <thead>
-                <tr>
-                  <th class="px-5 py-3 border-b-2 border-gray-200 bg-white text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
-                  <th class="px-5 py-3 border-b-2 border-gray-200 bg-white text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                  <th class="px-5 py-3 border-b-2 border-gray-200 bg-white"></th>
-                </tr>
-              </thead>
-              <tbody>
-                ${users.map(u => this.renderUserRow(u, user.id)).join('')}
-              </tbody>
-            </table>
+            <div class="hidden sm:flex w-full px-5 py-3 border-b-2 border-gray-200 bg-white">
+              <div class="w-1/3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</div>
+              <div class="w-1/3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</div>
+              <div class="w-1/3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Tindakan</div>
+            </div>
+            <div class="flex flex-col">
+              ${users.map(u => this.renderUserRow(u, user.id)).join('')}
+            </div>
           </div>
         </div>
       `;
@@ -38,30 +34,31 @@ const SuperAdminPage = {
     const roleBadgeColor = userToRender.role === 'teacher' ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-800';
     
     const actionButtons = isCurrentUser
-      ? `<td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right"></td>`
+      ? '' 
       : `
-        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
-          <div class="flex flex-col sm:flex-row sm:justify-end gap-2">
-            ${userToRender.role === 'user' ? 
-              `<button data-id="${userToRender.id}" class="promote-btn text-sm bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700">Jadikan Teacher</button>` : ''}
-            <button data-id="${userToRender.id}" class="delete-user-btn text-sm bg-red-600 text-white py-1 px-3 rounded hover:bg-red-700">Hapus</button>
-          </div>
-        </td>
+        <div class="w-full sm:w-1/3 flex flex-col sm:flex-row sm:justify-end gap-2 mt-4 sm:mt-0">
+          ${userToRender.role === 'user' ? 
+            `<button data-id="${userToRender.id}" class="promote-btn text-sm bg-green-600 text-white py-2 px-3 rounded hover:bg-green-700">Jadikan Teacher</button>` : ''}
+          <button data-id="${userToRender.id}" class="delete-user-btn text-sm bg-red-600 text-white py-2 px-3 rounded hover:bg-red-700">Hapus</button>
+        </div>
       `;
 
     return `
-      <tr>
-        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-          <p class="text-gray-900 whitespace-no-wrap">${userToRender.username}</p>
-        </td>
-        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center w-full px-5 py-5 border-b border-gray-200 bg-white">
+        
+        <div class="w-full sm:w-1/3 text-center sm:text-left">
+          <p class="text-gray-900 text-base sm:text-sm whitespace-no-wrap font-semibold sm:font-normal">${userToRender.username}</p>
+        </div>
+        <div class="w-full sm:w-1/3 mt-1 sm:mt-0 text-center sm:text-left">
           <span class="relative inline-block px-3 py-1 font-semibold leading-tight">
             <span aria-hidden class="absolute inset-0 ${roleBadgeColor} opacity-50 rounded-full"></span>
-            <span class="relative">${userToRender.role}</span>
+            <span class="relative text-sm sm:text-xs">${userToRender.role}</span>
           </span>
-        </td>
+        </div>
+        
         ${actionButtons}
-      </tr>
+
+      </div>
     `;
   },
 
