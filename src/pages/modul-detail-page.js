@@ -71,8 +71,9 @@ class ModulDetailPage {
 
     return `
         <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
-        <div class="flex flex-col md:flex-row gap-8">
-            <aside class="w-full md:w-1/4">
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <aside class="w-full lg:w-1/4">
             <div class="bg-white p-5 rounded-lg shadow-md sticky top-24">
                 <h3 class="text-lg font-bold text-brand-dark mb-2">${this._module.title}</h3>
 
@@ -104,7 +105,7 @@ class ModulDetailPage {
             </div>
             </aside>
 
-            <section id="material-content-container" class="w-full md:w-3/4">
+            <section id="material-content-container" class="w-full lg:w-3/4">
             ${this._allMaterials.length > 0
                 ? this._createMaterialContent(this._allMaterials.find(m => m.id === this._activeMaterialId))
                 : `<div class="bg-white p-6 rounded-lg shadow-md"><p class="text-gray-500">Silakan pilih materi dari daftar di samping.</p></div>`
@@ -146,7 +147,7 @@ class ModulDetailPage {
     this._restoreAccordionState(); 
     this._addAccordionListeners();
     this._addMaterialLinkListeners();
-    this._addNavigationListeners(); 
+    this._addNavigationListeners();
     this._addCompleteButtonListener();
     this._updateActiveMaterialStyle(); 
   }
@@ -239,7 +240,6 @@ class ModulDetailPage {
 
   _handleMaterialChange(materialId) {
     this._activeMaterialId = materialId;
-    
     localStorage.setItem(`last_viewed_material_${this._module.id}`, materialId);
 
     const selectedMaterial = this._allMaterials.find(m => m.id === materialId);
@@ -247,7 +247,6 @@ class ModulDetailPage {
     contentContainer.innerHTML = this._createMaterialContent(selectedMaterial);
 
     this._updateActiveMaterialStyle();
-    
     this._addCompleteButtonListener();
     this._addNavigationListeners(); 
   }
@@ -296,7 +295,7 @@ class ModulDetailPage {
           
           const sidebar = document.querySelector('#materials-list-sidebar');
           sidebar.innerHTML = this._generateSidebarList();
-          this._restoreAccordionState(); 
+          this._restoreAccordionState();
           this._addAccordionListeners(); 
           this._addMaterialLinkListeners();
           this._updateActiveMaterialStyle();
@@ -310,7 +309,7 @@ class ModulDetailPage {
           if (navContainer) {
               const currentMaterial = this._allMaterials.find(m => m.id === materialId);
               navContainer.innerHTML = this._createNavigationButtons(currentMaterial);
-              this._addNavigationListeners(); 
+              this._addNavigationListeners();
           }
 
         } catch (error) {
@@ -366,41 +365,41 @@ class ModulDetailPage {
   
   _createNavigationButtons(material) {
       const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
-      if (isTeacher) return '';
+      if (isTeacher) return ''; 
 
       const currentIndex = this._allMaterials.findIndex(m => m.id === material.id);
       const prevMaterial = this._allMaterials[currentIndex - 1];
       const nextMaterial = this._allMaterials[currentIndex + 1];
       const isCompleted = this._completedMaterials.includes(material.id);
 
-      let buttonsHtml = '<div class="flex justify-between mt-8 pt-6 border-t border-gray-200">';
+      let buttonsHtml = '<div class="flex flex-col lg:flex-row lg:justify-between gap-4 mt-8 pt-6 border-t border-gray-200">';
 
       if (prevMaterial) {
           buttonsHtml += `
-              <a href="#" class="nav-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2 shadow-sm" data-material-id="${prevMaterial.id}">
+              <a href="#" class="nav-btn w-full lg:w-auto justify-center bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2 shadow-sm font-medium" data-material-id="${prevMaterial.id}">
                   <span>&larr;</span> Materi Sebelumnya
               </a>
           `;
       } else {
-          buttonsHtml += `<div></div>`; 
+          buttonsHtml += `<div class="hidden lg:block"></div>`; 
       }
 
       if (nextMaterial) {
           if (isCompleted) {
                buttonsHtml += `
-                  <a href="#" class="nav-btn bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center gap-2 shadow-sm" data-material-id="${nextMaterial.id}">
+                  <a href="#" class="nav-btn w-full lg:w-auto justify-center bg-green-700 text-white px-4 py-3 rounded-lg hover:bg-green-800 transition-colors flex items-center gap-2 shadow-sm font-medium" data-material-id="${nextMaterial.id}">
                       Materi Selanjutnya <span>&rarr;</span>
                   </a>
               `;
           } else {
               buttonsHtml += `
-                  <button disabled class="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed flex items-center gap-2 shadow-none">
+                  <button disabled class="w-full lg:w-auto justify-center bg-gray-300 text-gray-500 px-4 py-3 rounded-lg cursor-not-allowed flex items-center gap-2 shadow-none font-medium">
                       Materi Selanjutnya <span>&rarr;</span>
                   </button>
               `;
           }
       } else {
-          buttonsHtml += `<div></div>`;
+           buttonsHtml += `<div class="hidden lg:block"></div>`;
       }
 
       buttonsHtml += '</div>';
