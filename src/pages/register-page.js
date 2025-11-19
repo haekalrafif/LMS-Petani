@@ -40,7 +40,6 @@ const RegisterPage = {
 
       registerButton.disabled = true;
       
-      // Tampilkan loading dengan transisi
       if (loading) {
           loading.style.display = 'flex';
           loading.style.opacity = '0';
@@ -69,7 +68,6 @@ const RegisterPage = {
         errorMessage.textContent = error.message;
         registerButton.disabled = false;
       } finally {
-        // Sembunyikan loading
         if (loading) {
             loading.style.opacity = '0';
             setTimeout(() => {

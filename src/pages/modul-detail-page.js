@@ -256,7 +256,6 @@ class ModulDetailPage {
     const activeLink = document.querySelector(`.material-link[data-material-id='${this._activeMaterialId}']`);
     if (activeLink) {
         activeLink.classList.add('active-material');
-        // Buka accordion parent-nya jika tertutup
         const parentList = activeLink.closest('.topic-materials-list');
         if (parentList && parentList.classList.contains('hidden')) {
             parentList.classList.remove('hidden');

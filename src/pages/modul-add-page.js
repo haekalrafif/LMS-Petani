@@ -74,7 +74,6 @@ const ModulAddPage = {
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
         saveButton.disabled = false;
-        // Sembunyikan loading hanya jika error, jika sukses biarkan app.js handle saat pindah halaman
         if (loading) {
             loading.style.opacity = '0';
             setTimeout(() => {
@@ -82,7 +81,6 @@ const ModulAddPage = {
             }, 500);
         }
       } 
-      // Catatan: Kita tidak pakai finally untuk hide loading di sini agar transisi ke halaman modul mulus
     });
   },
 };

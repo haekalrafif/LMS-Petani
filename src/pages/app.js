@@ -9,34 +9,27 @@ class App {
   }
 
   _initialAppShell() {
-    // Kosong
   }
 
   async renderPage() {
-    // 1. Ambil elemen loading
     const loading = document.getElementById('loading');
     
-    // 2. Tampilkan loading saat mulai proses render
-    // PERBAIKAN: Gunakan 'flex' agar layout tetap di tengah (jangan '')
     if (loading) {
         loading.style.display = 'flex';
-        loading.style.opacity = '1'; // Pastikan terlihat jelas
+        loading.style.opacity = '1'; 
     }
 
     try {
-        // --- LOGIKA UTAMA MULAI ---
         
         const currentHashPath = window.location.hash.slice(1).toLowerCase();
         let page = null;
         let matchedRoutePattern = null;
         const fullPathWithSlash = currentHashPath;
 
-        // Cek route statis
         if (routes[fullPathWithSlash]) {
             matchedRoutePattern = fullPathWithSlash;
             page = routes[fullPathWithSlash];
         } else {
-            // Cek route dinamis
             for (const routePattern in routes) {
                 if (routePattern.includes(':')) {
                     const regex = new RegExp(`^${routePattern.replace(/:[a-zA-Z0-9_]+/g, '(.+)')}$`);
@@ -49,44 +42,37 @@ class App {
             }
         }
 
-        // Fallback ke home jika route tidak ditemukan
         if (!page) {
             page = routes['/'];
             matchedRoutePattern = '/';
         }
 
-        // Cek Auth
         const publicRoutes = ['/login', '/register'];
         const token = localStorage.getItem('token');
         const mainContent = this._content;
 
-        // Atur padding konten agar tidak tertutup navbar
         if (publicRoutes.includes(matchedRoutePattern)) {
             mainContent.className = '';
         } else {
-            mainContent.className = 'pt-24 md:pt-28'; 
+            mainContent.className = 'pt-16';
         }
 
-        // Redirect Logic
         if (!token && !publicRoutes.includes(matchedRoutePattern)) {
             window.location.hash = '#/login';
-            return; // Finally akan tetap jalan untuk hide loading
+            return; 
         }
 
         if (token && publicRoutes.includes(matchedRoutePattern)) {
             window.location.hash = '#/dasbor';
-            return; // Finally akan tetap jalan untuk hide loading
+            return; 
         }
 
-        // Render Navbar
         this._navbar.innerHTML = generateNavbarTemplate();
         this._activateNavbarEvents();
 
-        // Render Halaman
         const pageContent = await page.render();
         this._content.innerHTML = pageContent;
 
-        // Script khusus halaman
         if (page.afterRender) {
             await page.afterRender();
         }
@@ -95,7 +81,6 @@ class App {
 
     } catch (error) {
         console.error('Error rendering page:', error);
-        // Tampilkan pesan error visual jika terjadi crash
         this._content.innerHTML = `
             <div class="flex flex-col items-center justify-center min-h-screen p-4 text-center">
                 <h2 class="text-xl font-bold text-red-600 mb-2">Terjadi Kesalahan</h2>
@@ -104,9 +89,7 @@ class App {
             </div>
         `;
     } finally {
-        // 3. PASTI DIJALANKAN: Sembunyikan loading dengan aman
         if (loading) {
-            // Gunakan setTimeout kecil untuk memastikan browser sempat me-render konten sebelum loading hilang
             setTimeout(() => {
                 loading.style.display = 'none';
             }, 100);

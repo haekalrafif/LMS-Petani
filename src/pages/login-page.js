@@ -42,7 +42,6 @@ const LoginPage = {
       
       let loginSuccess = false;
 
-      // --- TAMPILKAN LOADING DENGAN FADE-IN ---
       if (loading) {
           loading.style.display = 'flex';
           loading.style.opacity = '0';
@@ -84,7 +83,6 @@ const LoginPage = {
         errorMessage.textContent = error.message;
         loginButton.disabled = false;
       } finally {
-        // --- SEMBUNYIKAN HANYA JIKA GAGAL ---
         if (loading && !loginSuccess) {
             loading.style.opacity = '0';
             setTimeout(() => {
