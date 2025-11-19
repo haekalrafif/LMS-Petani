@@ -47,6 +47,17 @@ class ModulDetailPage {
 
     this._activeMaterialId = this._getFirstUncompletedMaterialId();
 
+    const lastViewedKey = `last_viewed_material_${moduleId}`;
+    const lastViewedId = localStorage.getItem(lastViewedKey);
+    
+    if (lastViewedId) {
+        const parsedId = parseInt(lastViewedId, 10);
+        const materialExists = this._allMaterials.find(m => m.id === parsedId);
+        if (materialExists && this._isMaterialUnlocked(parsedId)) {
+            this._activeMaterialId = parsedId;
+        }
+    }
+
     if (materialIdFromUrl) {
         const requestedId = parseInt(materialIdFromUrl, 10);
         if (this._isMaterialUnlocked(requestedId)) {
@@ -102,7 +113,7 @@ class ModulDetailPage {
         </div>
         </div>
     `;
-}
+  }
   
   _createTopicSection(topic, isModuleAuthor) {
     const addMaterialButtonListItem = isModuleAuthor 
@@ -116,11 +127,11 @@ class ModulDetailPage {
 
     return `
       <div class="topic-section mb-2">
-        <div class="topic-header flex justify-between items-center w-full text-left font-bold py-2 cursor-pointer">
+        <div class="topic-header flex justify-between items-center w-full text-left font-bold py-2 cursor-pointer" data-topic-id="${topic.id}">
           <span class="flex-grow pr-2">${topic.title}</span>
           <svg class="w-4 h-4 transition-transform transform ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
-        <ul class="topic-materials-list pl-2 border-l-2 border-gray-200">
+        <ul id="topic-list-${topic.id}" class="topic-materials-list pl-2 border-l-2 border-gray-200 hidden">
           ${topic.materials.length > 0
             ? topic.materials.map(material => this._createMaterialListItem(material)).join('')
             : '<li class="text-sm text-gray-500 p-3 italic">Belum ada materi.</li>'
@@ -129,23 +140,56 @@ class ModulDetailPage {
         </ul>
       </div>
     `;
-}
+  }
 
   async afterRender() {
+    this._restoreAccordionState(); 
     this._addAccordionListeners();
     this._addMaterialLinkListeners();
+    this._addNavigationListeners(); 
     this._addCompleteButtonListener();
-    this._updateActiveMaterialStyle();
+    this._updateActiveMaterialStyle(); 
   }
   
+  _restoreAccordionState() {
+      const moduleId = this._module.id;
+      const openTopics = JSON.parse(localStorage.getItem(`open_topics_${moduleId}`)) || [];
+
+      openTopics.forEach(topicId => {
+          const header = document.querySelector(`.topic-header[data-topic-id="${topicId}"]`);
+          if (header) {
+              const content = header.nextElementSibling;
+              const icon = header.querySelector('svg');
+              
+              if (content) content.classList.remove('hidden');
+              if (icon) icon.classList.add('rotate-180');
+          }
+      });
+  }
+
   _addAccordionListeners() {
       const topicHeaders = document.querySelectorAll('.topic-header');
       topicHeaders.forEach(header => {
           header.addEventListener('click', () => {
               const content = header.nextElementSibling;
               const icon = header.querySelector('svg');
+              const topicId = header.dataset.topicId;
+              const moduleId = this._module.id;
+
               content.classList.toggle('hidden');
               icon.classList.toggle('rotate-180');
+
+              let openTopics = JSON.parse(localStorage.getItem(`open_topics_${moduleId}`)) || [];
+
+              if (!content.classList.contains('hidden')) {
+                  if (!openTopics.includes(topicId)) {
+                      openTopics.push(topicId);
+                  }
+              } else {
+                  openTopics = openTopics.filter(id => id !== topicId);
+              }
+
+              localStorage.setItem(`open_topics_${moduleId}`, JSON.stringify(openTopics));
           });
       });
   }
@@ -162,7 +206,7 @@ class ModulDetailPage {
 
   _getFirstUncompletedMaterialId() {
     if (!this._allMaterials || this._allMaterials.length === 0) return null;
-    if (this._user && this._user.role === 'super admin') return this._allMaterials[0].id;
+    if (this._user && (this._user.role === 'super admin' || this._user.role === 'teacher')) return this._allMaterials[0].id;
     for (const material of this._allMaterials) {
         if (!this._completedMaterials.includes(material.id)) {
             return material.id;
@@ -172,8 +216,9 @@ class ModulDetailPage {
   }
   
   _generateSidebarList() {
+    const isModuleAuthor = this._user && (this._user.id === this._module.author_id || this._user.role === 'super admin');
     return this._module.topics && this._module.topics.length > 0
-      ? this._module.topics.map(topic => this._createTopicSection(topic)).join('')
+      ? this._module.topics.map(topic => this._createTopicSection(topic, isModuleAuthor)).join('')
       : '<p class="text-sm text-gray-500">Belum ada topik.</p>';
   }
 
@@ -192,6 +237,21 @@ class ModulDetailPage {
     if (progressText) progressText.textContent = `${percentage}% Selesai`;
   }
 
+  _handleMaterialChange(materialId) {
+    this._activeMaterialId = materialId;
+    
+    localStorage.setItem(`last_viewed_material_${this._module.id}`, materialId);
+
+    const selectedMaterial = this._allMaterials.find(m => m.id === materialId);
+    const contentContainer = document.querySelector('#material-content-container');
+    contentContainer.innerHTML = this._createMaterialContent(selectedMaterial);
+
+    this._updateActiveMaterialStyle();
+    
+    this._addCompleteButtonListener();
+    this._addNavigationListeners(); 
+  }
+
   _addMaterialLinkListeners() {
     const materialLinks = document.querySelectorAll('.material-link');
     materialLinks.forEach(link => {
@@ -203,16 +263,20 @@ class ModulDetailPage {
         }
         
         const materialId = parseInt(event.currentTarget.dataset.materialId, 10);
-        this._activeMaterialId = materialId;
-
-        const selectedMaterial = this._allMaterials.find(m => m.id === materialId);
-        const contentContainer = document.querySelector('#material-content-container');
-        contentContainer.innerHTML = this._createMaterialContent(selectedMaterial);
-
-        this._updateActiveMaterialStyle();
-        this._addCompleteButtonListener();
+        this._handleMaterialChange(materialId);
       });
     });
+  }
+
+  _addNavigationListeners() {
+      const navButtons = document.querySelectorAll('.nav-btn');
+      navButtons.forEach(btn => {
+          btn.addEventListener('click', (event) => {
+              event.preventDefault();
+              const materialId = parseInt(event.currentTarget.dataset.materialId, 10);
+              this._handleMaterialChange(materialId);
+          });
+      });
   }
   
   _addCompleteButtonListener() {
@@ -232,15 +296,22 @@ class ModulDetailPage {
           
           const sidebar = document.querySelector('#materials-list-sidebar');
           sidebar.innerHTML = this._generateSidebarList();
+          this._restoreAccordionState(); 
           this._addAccordionListeners(); 
           this._addMaterialLinkListeners();
-
           this._updateActiveMaterialStyle();
           this._updateProgressBar();
 
           button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 -ml-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg> Selesai`;
           button.classList.remove('bg-green-600', 'hover:bg-green-700', 'complete-btn');
           button.classList.add('bg-gray-400', 'cursor-not-allowed');
+          
+          const navContainer = document.querySelector('#navigation-buttons-container');
+          if (navContainer) {
+              const currentMaterial = this._allMaterials.find(m => m.id === materialId);
+              navContainer.innerHTML = this._createNavigationButtons(currentMaterial);
+              this._addNavigationListeners(); 
+          }
 
         } catch (error) {
           alert(`Gagal menandai selesai: ${error.message}`);
@@ -253,14 +324,11 @@ class ModulDetailPage {
 
   _updateActiveMaterialStyle() {
     document.querySelectorAll('.material-link').forEach(l => l.classList.remove('active-material'));
+    
     const activeLink = document.querySelector(`.material-link[data-material-id='${this._activeMaterialId}']`);
+    
     if (activeLink) {
         activeLink.classList.add('active-material');
-        const parentList = activeLink.closest('.topic-materials-list');
-        if (parentList && parentList.classList.contains('hidden')) {
-            parentList.classList.remove('hidden');
-            parentList.previousElementSibling.querySelector('svg').classList.add('rotate-180');
-        }
     }
 
     const styleId = 'dynamic-active-material-style';
@@ -296,6 +364,49 @@ class ModulDetailPage {
     `;
   }
   
+  _createNavigationButtons(material) {
+      const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
+      if (isTeacher) return '';
+
+      const currentIndex = this._allMaterials.findIndex(m => m.id === material.id);
+      const prevMaterial = this._allMaterials[currentIndex - 1];
+      const nextMaterial = this._allMaterials[currentIndex + 1];
+      const isCompleted = this._completedMaterials.includes(material.id);
+
+      let buttonsHtml = '<div class="flex justify-between mt-8 pt-6 border-t border-gray-200">';
+
+      if (prevMaterial) {
+          buttonsHtml += `
+              <a href="#" class="nav-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2 shadow-sm" data-material-id="${prevMaterial.id}">
+                  <span>&larr;</span> Materi Sebelumnya
+              </a>
+          `;
+      } else {
+          buttonsHtml += `<div></div>`; 
+      }
+
+      if (nextMaterial) {
+          if (isCompleted) {
+               buttonsHtml += `
+                  <a href="#" class="nav-btn bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center gap-2 shadow-sm" data-material-id="${nextMaterial.id}">
+                      Materi Selanjutnya <span>&rarr;</span>
+                  </a>
+              `;
+          } else {
+              buttonsHtml += `
+                  <button disabled class="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed flex items-center gap-2 shadow-none">
+                      Materi Selanjutnya <span>&rarr;</span>
+                  </button>
+              `;
+          }
+      } else {
+          buttonsHtml += `<div></div>`;
+      }
+
+      buttonsHtml += '</div>';
+      return buttonsHtml;
+  }
+
   _createMaterialContent(material) {
     if (!material) return '<div class="bg-white p-6 rounded-lg shadow-md"><p class="text-gray-500">Materi tidak ditemukan.</p></div>';
 
@@ -333,7 +444,8 @@ class ModulDetailPage {
         <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
           <h2 class="text-2xl font-bold text-brand-dark">${material.title}</h2>
           <div class="flex items-center gap-4 self-end">
-            ${adminButtons} ${completeButtonHtml}
+            ${adminButtons}
+            ${completeButtonHtml}
           </div>
         </div><hr class="my-4 border-t border-gray-200" />
         ${embedUrl ? `
@@ -343,6 +455,10 @@ class ModulDetailPage {
         ` : ''}
         ${material.image_url ? `<img src="${material.image_url}" alt="${material.title}" class="w-full max-h-96 object-cover rounded-lg mb-4 shadow">` : ''}
         <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">${material.content}</p>
+        
+        <div id="navigation-buttons-container">
+            ${this._createNavigationButtons(material)}
+        </div>
       </div>
     `;
   }
