@@ -49,6 +49,7 @@ export const updateModule = (id, moduleData) => apiFetch(`/modules/${id}`, { met
 export const deleteModule = (id) => apiFetch(`/modules/${id}`, { method: 'DELETE' });
 export const getMaterialById = (moduleId, materialId) => apiFetch(`/modules/${moduleId}/materials/${materialId}`);
 export const updateMaterial = (moduleId, materialId, materialData) => apiFetch(`/modules/${moduleId}/materials/${materialId}`, { method: 'PUT', body: materialData });
+export const updateTopic = (moduleId, topicId, topicData) => apiFetch(`/modules/${moduleId}/topics/${topicId}`, { method: 'PUT', body: JSON.stringify(topicData) });
 export const getModuleProgress = (moduleId) => apiFetch(`/modules/${moduleId}/progress`);
 export const markMaterialAsCompleted = (moduleId, materialId) => apiFetch(`/modules/${moduleId}/materials/${materialId}/complete`, { method: 'POST' });
 

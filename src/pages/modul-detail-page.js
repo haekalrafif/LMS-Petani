@@ -312,6 +312,20 @@ class ModulDetailPage {
         }
     }
 
+    let adminButtons = '';
+    if (isTeacher && isModuleAuthor) {
+        adminButtons = `
+            <div class="flex gap-2">
+                <a href="#/modul/${this._module.id}/topic-edit/${material.topic_id}" class="bg-yellow-600 text-white font-bold py-2 px-4 rounded hover:bg-yellow-700 text-sm flex items-center">
+                    Edit Topik
+                </a>
+                <a href="#/modul/${this._module.id}/materi-edit/${material.id}" class="bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-800 text-sm flex items-center">
+                    Edit Materi
+                </a>
+            </div>
+        `;
+    }
+
     const embedUrl = this._getYouTubeEmbedUrl(material.youtube_url);
 
     return `
@@ -319,8 +333,7 @@ class ModulDetailPage {
         <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
           <h2 class="text-2xl font-bold text-brand-dark">${material.title}</h2>
           <div class="flex items-center gap-4 self-end">
-            ${isTeacher && isModuleAuthor ? `<a href="#/modul/${this._module.id}/materi-edit/${material.id}" class="bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-800">Edit</a>` : ''}
-            ${completeButtonHtml}
+            ${adminButtons} ${completeButtonHtml}
           </div>
         </div><hr class="my-4 border-t border-gray-200" />
         ${embedUrl ? `
