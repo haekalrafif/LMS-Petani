@@ -34,7 +34,7 @@ const SuperAdminPage = {
     const roleBadgeColor = userToRender.role === 'teacher' ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-800';
     
     const actionButtons = isCurrentUser
-      ? '' 
+      ? ''
       : `
         <div class="w-full sm:w-1/3 flex flex-col sm:flex-row sm:justify-end gap-2 mt-4 sm:mt-0">
           ${userToRender.role === 'user' ? 
@@ -45,7 +45,6 @@ const SuperAdminPage = {
 
     return `
       <div class="flex flex-col sm:flex-row sm:items-center w-full px-5 py-5 border-b border-gray-200 bg-white">
-        
         <div class="w-full sm:w-1/3 text-center sm:text-left">
           <p class="text-gray-900 text-base sm:text-sm whitespace-no-wrap font-semibold sm:font-normal">${userToRender.username}</p>
         </div>
@@ -55,24 +54,35 @@ const SuperAdminPage = {
             <span class="relative text-sm sm:text-xs">${userToRender.role}</span>
           </span>
         </div>
-        
         ${actionButtons}
-
       </div>
     `;
   },
 
   async afterRender() {
+    const loading = document.getElementById('loading');
+
     const promoteButtons = document.querySelectorAll('.promote-btn');
     promoteButtons.forEach(button => {
       button.addEventListener('click', async (e) => {
         const userId = e.target.dataset.id;
         if (confirm('Apakah Anda yakin ingin menjadikan pengguna ini seorang Teacher?')) {
+          if (loading) {
+              loading.style.display = 'flex';
+              loading.style.opacity = '0';
+              setTimeout(() => loading.style.opacity = '1', 10);
+          }
           try {
             await updateUserRole(userId, 'teacher');
             location.reload();
           } catch (error) {
             alert(`Gagal memperbarui peran: ${error.message}`);
+            if (loading) {
+                loading.style.opacity = '0';
+                setTimeout(() => {
+                    if (loading.style.opacity === '0') loading.style.display = 'none';
+                }, 500);
+            }
           }
         }
       });
@@ -83,11 +93,22 @@ const SuperAdminPage = {
       button.addEventListener('click', async (e) => {
         const userId = e.target.dataset.id;
         if (confirm('PERINGATAN: Tindakan ini akan menghapus pengguna secara permanen. Lanjutkan?')) {
+          if (loading) {
+              loading.style.display = 'flex';
+              loading.style.opacity = '0';
+              setTimeout(() => loading.style.opacity = '1', 10);
+          }
           try {
             await deleteUser(userId);
             location.reload();
           } catch (error) {
             alert(`Gagal menghapus pengguna: ${error.message}`);
+            if (loading) {
+                loading.style.opacity = '0';
+                setTimeout(() => {
+                    if (loading.style.opacity === '0') loading.style.display = 'none';
+                }, 500);
+            }
           }
         }
       });

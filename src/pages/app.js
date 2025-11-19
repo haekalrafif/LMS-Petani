@@ -16,11 +16,12 @@ class App {
     // 1. Ambil elemen loading
     const loading = document.getElementById('loading');
     
-    // 2. Tampilkan loading (Safety measure)
-    // Kita pastikan display-nya flex agar center-nya jalan
+    // 2. Tampilkan loading saat mulai proses render
+    // PERBAIKAN: Gunakan 'flex' agar layout tetap di tengah (jangan '')
     if (loading) {
-        loading.style.display = 'flex'; 
-    } 
+        loading.style.display = 'flex';
+        loading.style.opacity = '1'; // Pastikan terlihat jelas
+    }
 
     try {
         // --- LOGIKA UTAMA MULAI ---
@@ -59,7 +60,7 @@ class App {
         const token = localStorage.getItem('token');
         const mainContent = this._content;
 
-        // Atur padding konten
+        // Atur padding konten agar tidak tertutup navbar
         if (publicRoutes.includes(matchedRoutePattern)) {
             mainContent.className = '';
         } else {
@@ -69,12 +70,12 @@ class App {
         // Redirect Logic
         if (!token && !publicRoutes.includes(matchedRoutePattern)) {
             window.location.hash = '#/login';
-            return; 
+            return; // Finally akan tetap jalan untuk hide loading
         }
 
         if (token && publicRoutes.includes(matchedRoutePattern)) {
             window.location.hash = '#/dasbor';
-            return; 
+            return; // Finally akan tetap jalan untuk hide loading
         }
 
         // Render Navbar
@@ -94,24 +95,22 @@ class App {
 
     } catch (error) {
         console.error('Error rendering page:', error);
+        // Tampilkan pesan error visual jika terjadi crash
         this._content.innerHTML = `
             <div class="flex flex-col items-center justify-center min-h-screen p-4 text-center">
                 <h2 class="text-xl font-bold text-red-600 mb-2">Terjadi Kesalahan</h2>
                 <p class="text-gray-700">${error.message}</p>
-                <button onclick="location.reload()" class="mt-4 bg-green-700 text-white px-4 py-2 rounded">Coba Lagi</button>
+                <button onclick="location.reload()" class="mt-4 bg-green-700 text-white px-4 py-2 rounded">Muat Ulang</button>
             </div>
         `;
     } finally {
-       // 3. PASTI DIJALANKAN: Sembunyikan loading
-       if (loading) {
-           // Kita gunakan fade-out effect agar halus
-           loading.style.opacity = '0';
-           
-           // Tunggu 0.5 detik (sesuai transisi CSS) baru hilangkan dari layout
-           setTimeout(() => {
-               loading.style.display = 'none';
-           }, 500);
-       }
+        // 3. PASTI DIJALANKAN: Sembunyikan loading dengan aman
+        if (loading) {
+            // Gunakan setTimeout kecil untuk memastikan browser sempat me-render konten sebelum loading hilang
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 100);
+        }
     }
   }
 

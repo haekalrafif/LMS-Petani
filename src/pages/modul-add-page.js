@@ -40,7 +40,7 @@ const ModulAddPage = {
     const shortDescriptionInput = document.querySelector('#short_description');
     const charCount = document.querySelector('#char-count');
     const saveButton = document.querySelector('#save-button');
-    const loadingOverlay = document.querySelector('#loading-overlay');
+    const loading = document.getElementById('loading');
 
     shortDescriptionInput.addEventListener('input', () => {
       const remaining = 155 - shortDescriptionInput.value.length;
@@ -52,7 +52,11 @@ const ModulAddPage = {
       errorMessage.textContent = '';
 
       saveButton.disabled = true;
-      loadingOverlay.classList.remove('hidden');
+      if (loading) {
+          loading.style.display = 'flex';
+          loading.style.opacity = '0';
+          setTimeout(() => loading.style.opacity = '1', 10);
+      }
 
       const title = form.title.value;
       const short_description = form.short_description.value; 
@@ -70,9 +74,15 @@ const ModulAddPage = {
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
         saveButton.disabled = false;
-      } finally {
-        loadingOverlay.classList.add('hidden');
-      }
+        // Sembunyikan loading hanya jika error, jika sukses biarkan app.js handle saat pindah halaman
+        if (loading) {
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                if (loading.style.opacity === '0') loading.style.display = 'none';
+            }, 500);
+        }
+      } 
+      // Catatan: Kita tidak pakai finally untuk hide loading di sini agar transisi ke halaman modul mulus
     });
   },
 };

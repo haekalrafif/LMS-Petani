@@ -53,7 +53,7 @@ const ModulEditPage = {
     const shortDescriptionInput = document.querySelector('#short_description');
     const charCount = document.querySelector('#char-count');
     const updateButton = document.querySelector('#update-button');
-    const loadingOverlay = document.querySelector('#loading-overlay');
+    const loading = document.getElementById('loading');
 
     if (shortDescriptionInput && charCount) {
         shortDescriptionInput.addEventListener('input', () => {
@@ -69,7 +69,11 @@ const ModulEditPage = {
       errorMessage.textContent = '';
 
       updateButton.disabled = true;
-      loadingOverlay.classList.remove('hidden');
+      if (loading) {
+          loading.style.display = 'flex';
+          loading.style.opacity = '0';
+          setTimeout(() => loading.style.opacity = '1', 10);
+      }
 
       const title = form.title.value;
       const short_description = form.short_description.value; 
@@ -89,8 +93,12 @@ const ModulEditPage = {
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
         updateButton.disabled = false;
-      } finally {
-        loadingOverlay.classList.add('hidden');
+        if (loading) {
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                if (loading.style.opacity === '0') loading.style.display = 'none';
+            }, 500);
+        }
       }
     });
   },

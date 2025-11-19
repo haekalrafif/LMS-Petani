@@ -36,10 +36,20 @@ const LoginPage = {
       e.preventDefault();
       const username = document.querySelector('#username').value;
       const password = document.querySelector('#password').value;
-      errorMessage.textContent = ''; 
       
+      errorMessage.textContent = ''; 
       loginButton.disabled = true;
-      if (loading) loading.style.display = 'flex';
+      
+      let loginSuccess = false;
+
+      // --- TAMPILKAN LOADING DENGAN FADE-IN ---
+      if (loading) {
+          loading.style.display = 'flex';
+          loading.style.opacity = '0';
+          setTimeout(() => {
+             loading.style.opacity = '1';
+          }, 10);
+      }
 
       try {
         const response = await fetch('https://backend-lms-petani.vercel.app/api/auth/login', {
@@ -56,9 +66,12 @@ const LoginPage = {
           throw new Error(data.message || 'Gagal untuk masuk');
         }
 
+        loginSuccess = true;
+
         localStorage.setItem('token', data.token);
         const token = data.token;
         const payload = JSON.parse(atob(token.split('.')[1]));
+        
         if (payload.user.role === 'teacher') {
           window.location.hash = '#/modul';
         } else if (payload.user.role === 'super admin') {
@@ -66,12 +79,20 @@ const LoginPage = {
         } else {
           window.location.hash = '#/dasbor';
         }
-
+        
       } catch (error) {
         errorMessage.textContent = error.message;
         loginButton.disabled = false;
       } finally {
-        if (loading) loading.style.display = 'none';
+        // --- SEMBUNYIKAN HANYA JIKA GAGAL ---
+        if (loading && !loginSuccess) {
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                if (loading.style.opacity === '0') {
+                   loading.style.display = 'none';
+                }
+            }, 500);
+        }
       }
     });
   },

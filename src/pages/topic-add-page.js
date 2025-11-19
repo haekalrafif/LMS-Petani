@@ -30,14 +30,18 @@ const TopicAddPage = {
     const errorMessage = document.querySelector('#error-message');
     const moduleId = window.location.hash.split('/')[2];
     const saveButton = document.querySelector('#save-button');
-    const loadingOverlay = document.querySelector('#loading-overlay');
+    const loading = document.getElementById('loading');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.textContent = '';
 
       saveButton.disabled = true;
-      loadingOverlay.classList.remove('hidden');
+      if (loading) {
+          loading.style.display = 'flex';
+          loading.style.opacity = '0';
+          setTimeout(() => loading.style.opacity = '1', 10);
+      }
 
       const title = form.title.value;
       
@@ -48,8 +52,12 @@ const TopicAddPage = {
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
         saveButton.disabled = false;
-      } finally {
-        loadingOverlay.classList.add('hidden');
+        if (loading) {
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                if (loading.style.opacity === '0') loading.style.display = 'none';
+            }, 500);
+        }
       }
     });
   },

@@ -55,14 +55,18 @@ const ModulMateriEditPage = {
     const form = document.querySelector('#edit-material-form');
     const errorMessage = document.querySelector('#error-message');
     const updateButton = document.querySelector('#update-button');
-    const loadingOverlay = document.querySelector('#loading-overlay');
+    const loading = document.getElementById('loading');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.textContent = '';
 
       updateButton.disabled = true;
-      loadingOverlay.classList.remove('hidden');
+      if (loading) {
+          loading.style.display = 'flex';
+          loading.style.opacity = '0';
+          setTimeout(() => loading.style.opacity = '1', 10);
+      }
 
       const title = form.title.value;
       const content = form.content.value;
@@ -86,8 +90,12 @@ const ModulMateriEditPage = {
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
         updateButton.disabled = false;
-      } finally {
-        loadingOverlay.classList.add('hidden');
+        if (loading) {
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                if (loading.style.opacity === '0') loading.style.display = 'none';
+            }, 500);
+        }
       }
     });
   },

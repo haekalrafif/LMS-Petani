@@ -80,17 +80,30 @@ const ModulPage = {
 
   async afterRender() {
     const user = getCurrentUser();
+    const loading = document.getElementById('loading');
+
     if (user && (user.role === 'teacher' || user.role === 'super admin')) {
       const deleteButtons = document.querySelectorAll('.delete-btn');
       deleteButtons.forEach(button => {
         button.addEventListener('click', async (e) => {
           const moduleId = e.target.dataset.id;
           if (confirm('Apakah Anda yakin ingin menghapus modul ini?')) {
+            if (loading) {
+                loading.style.display = 'flex';
+                loading.style.opacity = '0';
+                setTimeout(() => loading.style.opacity = '1', 10);
+            }
             try {
               await deleteModule(moduleId);
               location.reload(); 
             } catch (error) {
               alert(`Gagal menghapus modul: ${error.message}`);
+              if (loading) {
+                  loading.style.opacity = '0';
+                  setTimeout(() => {
+                    if (loading.style.opacity === '0') loading.style.display = 'none';
+                  }, 500);
+              }
             }
           }
         });

@@ -30,7 +30,7 @@ const RegisterPage = {
     const form = document.querySelector('#register-form');
     const errorMessage = document.querySelector('#error-message');
     const registerButton = document.querySelector('#register-button');
-    const loadingOverlay = document.querySelector('#loading-overlay');
+    const loading = document.getElementById('loading');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -39,7 +39,13 @@ const RegisterPage = {
       errorMessage.textContent = '';
 
       registerButton.disabled = true;
-      loadingOverlay.classList.remove('hidden');
+      
+      // Tampilkan loading dengan transisi
+      if (loading) {
+          loading.style.display = 'flex';
+          loading.style.opacity = '0';
+          setTimeout(() => loading.style.opacity = '1', 10);
+      }
 
       try {
         const response = await fetch('https://backend-lms-petani.vercel.app/api/auth/register', {
@@ -63,7 +69,13 @@ const RegisterPage = {
         errorMessage.textContent = error.message;
         registerButton.disabled = false;
       } finally {
-        loadingOverlay.classList.add('hidden');
+        // Sembunyikan loading
+        if (loading) {
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                if (loading.style.opacity === '0') loading.style.display = 'none';
+            }, 500);
+        }
       }
     });
   },
