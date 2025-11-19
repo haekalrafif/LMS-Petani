@@ -1,14 +1,18 @@
 import App from './pages/app.js';
 
 const app = new App({
-  navbar: document.querySelector('#navbar'),
+  navbar: document.querySelector('header'),
   content: document.querySelector('#main-content'),
 });
 
-const renderApp = () => {
-  app.renderPage(window.location.hash);
+const render = () => {
+  app.renderPage();
 };
 
-window.addEventListener('load', renderApp);
+window.addEventListener('hashchange', render);
 
-window.addEventListener('hashchange', renderApp);
+window.addEventListener('DOMContentLoaded', render);
+
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+  render();
+}

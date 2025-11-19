@@ -30,7 +30,7 @@ const LoginPage = {
     const loginForm = document.querySelector('#login-form');
     const errorMessage = document.querySelector('#error-message');
     const loginButton = document.querySelector('#login-button');
-    const loadingOverlay = document.querySelector('#loading-overlay');
+    const loading = document.getElementById('loading');
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -39,7 +39,7 @@ const LoginPage = {
       errorMessage.textContent = ''; 
       
       loginButton.disabled = true;
-      loadingOverlay.classList.remove('hidden');
+      if (loading) loading.style.display = 'flex';
 
       try {
         const response = await fetch('https://backend-lms-petani.vercel.app/api/auth/login', {
@@ -71,7 +71,7 @@ const LoginPage = {
         errorMessage.textContent = error.message;
         loginButton.disabled = false;
       } finally {
-        loadingOverlay.classList.add('hidden');
+        if (loading) loading.style.display = 'none';
       }
     });
   },
