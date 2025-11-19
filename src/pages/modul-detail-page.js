@@ -108,7 +108,7 @@ class ModulDetailPage {
             <section id="material-content-container" class="w-full lg:w-3/4">
             ${this._allMaterials.length > 0
                 ? this._createMaterialContent(this._allMaterials.find(m => m.id === this._activeMaterialId))
-                : `<div class="bg-white p-6 rounded-lg shadow-md"><p class="text-gray-500">Silakan pilih materi dari daftar di samping.</p></div>`
+                : `<div class="bg-white p-6 rounded-lg shadow-md"><p class="text-gray-500">Silakan pilih materi terlebih dahulu.</p></div>`
             }
             </section>
         </div>
