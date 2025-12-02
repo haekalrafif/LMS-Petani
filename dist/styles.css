@@ -377,9 +377,6 @@
   .h-full {
     height: 100%;
   }
-  .max-h-96 {
-    max-height: calc(var(--spacing) * 96);
-  }
   .min-h-screen {
     min-height: 100vh;
   }
@@ -966,11 +963,6 @@
       font-weight: var(--font-weight-normal);
     }
   }
-  .md\:block {
-    @media (width >= 48rem) {
-      display: block;
-    }
-  }
   .md\:flex {
     @media (width >= 48rem) {
       display: flex;
@@ -979,21 +971,6 @@
   .md\:hidden {
     @media (width >= 48rem) {
       display: none;
-    }
-  }
-  .md\:w-1\/4 {
-    @media (width >= 48rem) {
-      width: calc(1/4 * 100%);
-    }
-  }
-  .md\:w-3\/4 {
-    @media (width >= 48rem) {
-      width: calc(3/4 * 100%);
-    }
-  }
-  .md\:w-auto {
-    @media (width >= 48rem) {
-      width: auto;
     }
   }
   .md\:grid-cols-2 {

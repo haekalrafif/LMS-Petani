@@ -452,7 +452,7 @@ class ModulDetailPage {
             <iframe class="w-full aspect-video rounded-lg" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           </div>
         ` : ''}
-        ${material.image_url ? `<img src="${material.image_url}" alt="${material.title}" class="w-full max-h-96 object-cover rounded-lg mb-4 shadow">` : ''}
+        ${material.image_url ? `<img src="${material.image_url}" alt="${material.title}" class="w-full h-auto rounded-lg mb-4 shadow">` : ''}
         <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">${material.content}</p>
         
         <div id="navigation-buttons-container">
