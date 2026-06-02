@@ -93,7 +93,7 @@ class KuisTakePage {
                     </div>
                     <p class="text-sm text-gray-500 mt-2">(Syarat lulus: ${this._quizData.minScore})</p>
                 </div>
-                <a href="#/modul/${this._moduleId}" class="w-full sm:w-2/3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-lg block">
+                <a href="#/modul-detail/${this._moduleId}" class="w-full sm:w-2/3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-lg block">
                     KEMBALI KE MODUL
                 </a>
             </div>
@@ -162,7 +162,7 @@ class KuisTakePage {
                                 </div>
                             </div>
                             <div class="mt-4 pt-4 border-t border-gray-200">
-                                <a href="#/modul/${moduleId}" class="flex items-center justify-center text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors">
+                                <a href="#/modul-detail/${moduleId}" class="flex items-center justify-center text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors">
                                     &larr; Kembali ke Modul
                                 </a>
                             </div>
