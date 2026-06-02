@@ -1,9 +1,10 @@
-import { getModule, getCurrentUser, getModuleProgress, markMaterialAsCompleted } from '../utils/api.js';
+import { getModule, getCurrentUser, getModuleProgress, markMaterialAsCompleted, getQuizByModule } from '../utils/api.js';
 
 class ModulDetailPage {
   constructor() {
     this._module = null;
     this._user = null;
+    this._quiz = null;
     this._activeMaterialId = null;
     this._completedMaterials = [];
     this._allMaterials = [];
@@ -30,8 +31,8 @@ class ModulDetailPage {
     try {
         this._user = getCurrentUser();
         const [moduleData, progressData] = await Promise.all([
-        getModule(moduleId),
-        this._user && this._user.role !== 'teacher' && this._user.role !== 'super admin' ? getModuleProgress(moduleId) : Promise.resolve({ completedMaterialIds: [] })
+            getModule(moduleId),
+            this._user && this._user.role !== 'teacher' && this._user.role !== 'super admin' ? getModuleProgress(moduleId) : Promise.resolve({ completedMaterialIds: [] })
         ]);
         
         this._module = moduleData;
@@ -43,6 +44,12 @@ class ModulDetailPage {
 
     if (!this._module) {
         return `<p class="text-center text-red-500">Modul tidak ditemukan.</p>`;
+    }
+
+    try {
+        this._quiz = await getQuizByModule(moduleId);
+    } catch (error) {
+        this._quiz = null;
     }
 
     this._activeMaterialId = this._getFirstUncompletedMaterialId();
@@ -74,8 +81,8 @@ class ModulDetailPage {
         <div class="flex flex-col lg:flex-row gap-8">
             
             <aside class="w-full lg:w-1/4">
-            <div class="bg-white p-5 rounded-lg shadow-md sticky top-24">
-                <h3 class="text-lg font-bold text-brand-dark mb-2">${this._module.title}</h3>
+            <div class="bg-white p-5 rounded-lg shadow-md sticky top-24 border border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-2">${this._module.title}</h3>
 
                 ${!isTeacher ? `
                 <div>
@@ -89,17 +96,20 @@ class ModulDetailPage {
                 <hr class="my-3 mx-[-1.25rem] border-t border-gray-200" />
                 
                 <nav id="materials-list-sidebar">
-                ${this._module.topics && this._module.topics.length > 0
-                    ? this._module.topics.map(topic => this._createTopicSection(topic, isModuleAuthor)).join('')
-                    : (isModuleAuthor ? '' : '<p class="text-sm text-gray-500">Belum ada topik.</p>')
-                }
+                    ${this._generateSidebarList()}
                 </nav>
 
                 ${isModuleAuthor ? `
-                <div class="mt-4">
-                    <a href="#/modul/${this._module.id}/tambah-topik" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors block text-center">
-                    Tambah Topik Baru
+                <div class="mt-6 flex flex-col gap-3">
+                    <a href="#/modul/${this._module.id}/tambah-topik" class="bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-green-700 transition-colors block text-center text-sm shadow-sm">
+                        Tambah Topik Baru
                     </a>
+                    
+                    ${!this._quiz ? `
+                    <a href="#/modul/${this._module.id}/tambah-kuis" class="bg-blue-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors block text-center text-sm shadow-sm">
+                        Tambah Kuis Evaluasi
+                    </a>
+                    ` : ''}
                 </div>
                 ` : ''}
             </div>
@@ -128,7 +138,7 @@ class ModulDetailPage {
 
     return `
       <div class="topic-section mb-2">
-        <div class="topic-header flex justify-between items-center w-full text-left font-bold py-2 cursor-pointer" data-topic-id="${topic.id}">
+        <div class="topic-header flex justify-between items-center w-full text-left font-bold py-2 cursor-pointer text-gray-800" data-topic-id="${topic.id}">
           <span class="flex-grow pr-2">${topic.title}</span>
           <svg class="w-4 h-4 transition-transform transform ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
@@ -218,9 +228,24 @@ class ModulDetailPage {
   
   _generateSidebarList() {
     const isModuleAuthor = this._user && (this._user.id === this._module.author_id || this._user.role === 'super admin');
-    return this._module.topics && this._module.topics.length > 0
+    
+    let html = this._module.topics && this._module.topics.length > 0
       ? this._module.topics.map(topic => this._createTopicSection(topic, isModuleAuthor)).join('')
       : '<p class="text-sm text-gray-500">Belum ada topik.</p>';
+
+    // Jika kuis sudah dibuat, tambahkan menu Evaluasi Kuis di bagian paling bawah
+    if (this._quiz) {
+        html += `
+            <div class="mt-4 border-t border-gray-200 pt-3">
+                <a href="#/kuis/${this._module.id}" class="flex items-center p-3 text-green-700 font-bold bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-100">
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    Evaluasi Kuis
+                </a>
+            </div>
+        `;
+    }
+
+    return html;
   }
 
   _calculateProgress() {
@@ -294,7 +319,7 @@ class ModulDetailPage {
           this._completedMaterials.push(materialId);
           
           const sidebar = document.querySelector('#materials-list-sidebar');
-          sidebar.innerHTML = this._generateSidebarList();
+          sidebar.innerHTML = this._generateSidebarList(); // Merender ulang list topik & kuis
           this._restoreAccordionState();
           this._addAccordionListeners(); 
           this._addMaterialLinkListeners();
@@ -399,7 +424,15 @@ class ModulDetailPage {
               `;
           }
       } else {
-           buttonsHtml += `<div class="hidden lg:block"></div>`;
+           if (this._quiz) {
+               buttonsHtml += `
+                   <a href="#/kuis/${this._module.id}" class="w-full lg:w-auto justify-center bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm font-medium">
+                       Kerjakan Kuis Evaluasi <span>&rarr;</span>
+                   </a>
+               `;
+           } else {
+               buttonsHtml += `<div class="hidden lg:block"></div>`;
+           }
       }
 
       buttonsHtml += '</div>';
@@ -439,21 +472,21 @@ class ModulDetailPage {
     const embedUrl = this._getYouTubeEmbedUrl(material.youtube_url);
 
     return `
-      <div class="bg-white p-6 rounded-lg shadow-md">
+      <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
         <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
-          <h2 class="text-2xl font-bold text-brand-dark">${material.title}</h2>
+          <h2 class="text-2xl font-bold text-gray-800">${material.title}</h2>
           <div class="flex items-center gap-4 self-end">
             ${adminButtons}
             ${completeButtonHtml}
           </div>
         </div><hr class="my-4 border-t border-gray-200" />
         ${embedUrl ? `
-          <div class="mb-4">
-            <iframe class="w-full aspect-video rounded-lg" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div class="mb-6">
+            <iframe class="w-full aspect-video rounded-xl shadow-sm" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           </div>
         ` : ''}
-        ${material.image_url ? `<img src="${material.image_url}" alt="${material.title}" class="w-full h-auto rounded-lg mb-4 shadow">` : ''}
-        <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">${material.content}</p>
+        ${material.image_url ? `<img src="${material.image_url}" alt="${material.title}" class="w-full h-auto rounded-xl mb-6 shadow-sm">` : ''}
+        <div class="text-gray-700 leading-relaxed whitespace-pre-wrap">${material.content}</div>
         
         <div id="navigation-buttons-container">
             ${this._createNavigationButtons(material)}

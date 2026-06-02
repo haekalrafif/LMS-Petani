@@ -61,31 +61,25 @@ export const getCurrentUser = () => {
 };
 
 export const createQuiz = async (quizData) => {
-    return fetchWithToken(`${BASE_URL}/quizzes`, {
+    return apiFetch(`/quizzes`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify(quizData),
     });
 };
 
 export const getQuizByModule = async (moduleId) => {
-    return fetchWithToken(`${BASE_URL}/quizzes/module/${moduleId}`);
+    return apiFetch(`/quizzes/module/${moduleId}`);
 };
 
 export const submitQuizResult = async (quizId, resultData) => {
-    return fetchWithToken(`${BASE_URL}/quizzes/${quizId}/submit`, {
+    return apiFetch(`/quizzes/${quizId}/submit`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify(resultData),
     });
 };
 
 export const getMyQuizResult = async (quizId) => {
-    return fetchWithToken(`${BASE_URL}/quizzes/${quizId}/result`);
+    return apiFetch(`/quizzes/${quizId}/result`);
 };
 
 export const getAllUsers = () => apiFetch('/users');
