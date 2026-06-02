@@ -60,6 +60,34 @@ export const getCurrentUser = () => {
     return userData ? userData.user : null;
 };
 
+export const createQuiz = async (quizData) => {
+    return fetchWithToken(`${BASE_URL}/quizzes`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizData),
+    });
+};
+
+export const getQuizByModule = async (moduleId) => {
+    return fetchWithToken(`${BASE_URL}/quizzes/module/${moduleId}`);
+};
+
+export const submitQuizResult = async (quizId, resultData) => {
+    return fetchWithToken(`${BASE_URL}/quizzes/${quizId}/submit`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(resultData),
+    });
+};
+
+export const getMyQuizResult = async (quizId) => {
+    return fetchWithToken(`${BASE_URL}/quizzes/${quizId}/result`);
+};
+
 export const getAllUsers = () => apiFetch('/users');
 export const updateUserRole = (id, role) => apiFetch(`/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) });
 export const deleteUser = (id) => apiFetch(`/users/${id}`, { method: 'DELETE' });

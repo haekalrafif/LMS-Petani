@@ -1,18 +1,9 @@
-import { getCurrentUser } from '../utils/api.js';
+import { getQuizByModule, submitQuizResult } from '../utils/api.js';
 
 class KuisTakePage {
     constructor() {
-        this._quizData = {
-            id: 1,
-            title: "Penanaman Kentang",
-            totalQuestions: 2,
-            minScore: 80
-        };
-
-        this._questions = [
-            { id: 101, question_text: "Apa kondisi suhu yang paling baik untuk pertumbuhan tanaman kentang?", option_a: "Suhu panas antara 30-35°C", option_b: "Suhu sejuk antara 15-20°C", option_c: "Suhu dingin di bawah 5°C", option_d: "Suhu tidak berpengaruh pada kentang", correct_answer: "B" },
-            { id: 102, question_text: "Berapa kedalaman rata-rata yang ideal untuk menanam bibit umbi kentang?", option_a: "5 cm", option_b: "30 cm", option_c: "10-15 cm", option_d: "1 cm", correct_answer: "C" }
-        ];
+        this._quizData = null;
+        this._questions = [];
     }
 
     _createPreQuizTemplate() {
@@ -21,13 +12,10 @@ class KuisTakePage {
                 <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
                     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 </div>
-                
                 <h2 class="text-3xl font-bold text-gray-800 mb-6 uppercase tracking-wide">Kuis: ${this._quizData.title}</h2>
-                
                 <div class="w-full bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-200 mb-8 text-left">
                     <h4 class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">Deskripsi:</h4>
                     <p class="text-gray-700 leading-relaxed mb-6">Kuis ini bertujuan untuk menguji pemahaman Anda mengenai materi ${this._quizData.title} yang telah dipelajari. Anda harus menjawab semua soal.</p>
-                    
                     <h4 class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">Informasi Kuis:</h4>
                     <ul class="space-y-3">
                         <li class="flex items-center text-gray-700">
@@ -35,16 +23,11 @@ class KuisTakePage {
                             Jumlah Soal: <strong class="ml-1">${this._quizData.totalQuestions} Butir Soal</strong>
                         </li>
                         <li class="flex items-center text-gray-700">
-                            <svg class="w-5 h-5 text-green-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                            Tipe Soal: <strong class="ml-1">Pilihan Ganda</strong>
-                        </li>
-                        <li class="flex items-center text-gray-700">
                             <svg class="w-5 h-5 text-green-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
                             Syarat Kelulusan: <strong class="ml-1">Skor minimal ${this._quizData.minScore}%</strong>
                         </li>
                     </ul>
                 </div>
-                
                 <button id="btn-mulai-kuis" class="w-full sm:w-2/3 bg-green-700 hover:bg-green-800 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-xl tracking-wide">
                     MULAI KUIS
                 </button>
@@ -64,7 +47,6 @@ class KuisTakePage {
                             <div class="question-item">
                                 <p class="text-sm text-green-700 font-bold mb-2 uppercase tracking-widest bg-green-50 inline-block px-3 py-1 rounded">Soal ${index + 1} dari ${this._questions.length}</p>
                                 <p class="text-lg md:text-xl font-medium text-gray-800 mb-6 leading-relaxed">${q.question_text}</p>
-                                
                                 <div class="space-y-3">
                                     ${['A', 'B', 'C', 'D'].map(opt => `
                                         <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50 transition-colors focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent group">
@@ -78,7 +60,7 @@ class KuisTakePage {
                         `).join('')}
                     </div>
                     <div class="mt-12 pt-6 border-t border-gray-200">
-                        <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-xl">
+                        <button type="submit" id="btn-kirim-jawaban" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-xl">
                             KIRIM JAWABAN
                         </button>
                     </div>
@@ -96,24 +78,20 @@ class KuisTakePage {
                         : `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`
                     }
                 </div>
-                
                 <h2 class="text-3xl font-bold mb-2 ${isPassed ? 'text-green-700' : 'text-red-700'}">
                     ${isPassed ? 'Selamat, Anda Lulus!' : 'Maaf, Anda Belum Lulus.'}
                 </h2>
                 <p class="text-gray-600 mb-8">Kuis: ${this._quizData.title}</p>
-                
                 <div class="w-full bg-gray-50 p-8 rounded-xl border border-gray-200 mb-8 flex flex-col items-center">
                     <p class="text-gray-500 font-bold uppercase tracking-widest mb-2">Skor Anda</p>
                     <div class="text-6xl font-black ${isPassed ? 'text-green-600' : 'text-red-600'} mb-4">${score}</div>
-                    
                     <div class="flex items-center gap-2 text-gray-700 font-medium">
                         <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Anda menjawab ${correctCount} dari ${this._quizData.totalQuestions} soal dengan benar.
                     </div>
                     <p class="text-sm text-gray-500 mt-2">(Syarat lulus: ${this._quizData.minScore})</p>
                 </div>
-                
-                <a href="#/modul" class="w-full sm:w-2/3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-lg block">
+                <a href="#/modul/${this._moduleId}" class="w-full sm:w-2/3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-lg block">
                     KEMBALI KE MODUL
                 </a>
             </div>
@@ -129,15 +107,17 @@ class KuisTakePage {
                             <h3 class="text-lg font-bold text-gray-800 mb-2">Evaluasi Pembelajaran</h3>
                             <hr class="my-3 mx-[-1.25rem] border-t border-gray-200" />
                             <div class="flex flex-col gap-2">
-                                <div class="flex items-center gap-2 text-green-700 font-semibold p-2 bg-green-50 rounded">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                                    ${this._quizData.title}
+                                <div id="sidebar-quiz-title" class="flex items-center gap-2 text-green-700 font-semibold p-2 bg-green-50 rounded">
+                                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                                    Memuat Data...
                                 </div>
                             </div>
                         </div>
                     </aside>
                     <section id="quiz-content-area" class="w-full lg:w-3/4">
-                        ${this._createPreQuizTemplate()}
+                        <div class="bg-white p-10 rounded-2xl shadow-sm text-center">
+                            <p class="text-gray-500 font-semibold animate-pulse">Menyiapkan kuis untuk Anda...</p>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -145,30 +125,72 @@ class KuisTakePage {
     }
 
     async afterRender() {
+        const urlParts = window.location.hash.split('/');
+        this._moduleId = urlParts[2];
         const contentArea = document.getElementById('quiz-content-area');
-        const startBtn = document.getElementById('btn-mulai-kuis');
-        
-        if (startBtn) {
-            startBtn.addEventListener('click', () => {
-                contentArea.style.opacity = '0';
-                setTimeout(() => {
-                    contentArea.innerHTML = this._createQuestionsTemplate();
-                    contentArea.style.opacity = '1';
-                    contentArea.style.transition = 'opacity 0.5s ease-in-out';
-                    this._attachFormSubmitListener();
-                }, 300);
-            });
+
+        try {
+            // Ambil data kuis dan soal dari database berdasarkan moduleId
+            const data = await getQuizByModule(this._moduleId);
+            
+            // Format data dari API agar sesuai dengan struktur template
+            this._quizData = {
+                id: data.id,
+                title: data.title,
+                totalQuestions: data.questions ? data.questions.length : 0,
+                minScore: data.passing_score
+            };
+            this._questions = data.questions || [];
+
+            // Perbarui judul sidebar
+            document.getElementById('sidebar-quiz-title').innerHTML = `
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                ${this._quizData.title}
+            `;
+
+            // Tampilkan halaman Pre-Kuis
+            contentArea.innerHTML = this._createPreQuizTemplate();
+            
+            // Pasang listener untuk tombol "Mulai Kuis"
+            const startBtn = document.getElementById('btn-mulai-kuis');
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    contentArea.style.opacity = '0';
+                    setTimeout(() => {
+                        contentArea.innerHTML = this._createQuestionsTemplate();
+                        contentArea.style.opacity = '1';
+                        contentArea.style.transition = 'opacity 0.5s ease-in-out';
+                        this._attachFormSubmitListener();
+                    }, 300);
+                });
+            }
+
+        } catch (error) {
+            console.error("Gagal memuat kuis", error);
+            contentArea.innerHTML = `
+                <div class="bg-white p-10 rounded-2xl shadow-sm text-center border border-red-200">
+                    <p class="text-red-500 font-bold text-xl mb-2">Kuis Belum Tersedia</p>
+                    <p class="text-gray-600">Admin/Guru belum menambahkan kuis untuk modul ini.</p>
+                </div>
+            `;
+            document.getElementById('sidebar-quiz-title').textContent = "Belum Ada Kuis";
         }
     }
 
     _attachFormSubmitListener() {
         const form = document.getElementById('form-kerjakan-kuis');
+        const btnKirim = document.getElementById('btn-kirim-jawaban');
+        
         if (form) {
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                btnKirim.disabled = true;
+                btnKirim.textContent = 'Menghitung Nilai...';
+
                 const formData = new FormData(form);
                 let correctCount = 0;
 
+                // Hitung jawaban benar di frontend
                 this._questions.forEach((q) => {
                     const ans = formData.get(`question_${q.id}`);
                     if (ans === q.correct_answer) correctCount++;
@@ -177,12 +199,26 @@ class KuisTakePage {
                 const score = Math.round((correctCount / this._quizData.totalQuestions) * 100);
                 const isPassed = score >= this._quizData.minScore;
 
-                const contentArea = document.getElementById('quiz-content-area');
-                contentArea.style.opacity = '0';
-                setTimeout(() => {
-                    contentArea.innerHTML = this._createResultTemplate(score, isPassed, correctCount);
-                    contentArea.style.opacity = '1';
-                }, 300);
+                try {
+                    // Simpan hasil nilai ke database
+                    await submitQuizResult(this._quizData.id, {
+                        score: score,
+                        is_passed: isPassed ? 1 : 0
+                    });
+
+                    // Tampilkan halaman Hasil
+                    const contentArea = document.getElementById('quiz-content-area');
+                    contentArea.style.opacity = '0';
+                    setTimeout(() => {
+                        contentArea.innerHTML = this._createResultTemplate(score, isPassed, correctCount);
+                        contentArea.style.opacity = '1';
+                    }, 300);
+
+                } catch (error) {
+                    alert('Terjadi kesalahan saat menyimpan hasil: ' + error.message);
+                    btnKirim.disabled = false;
+                    btnKirim.textContent = 'KIRIM JAWABAN';
+                }
             });
         }
     }
