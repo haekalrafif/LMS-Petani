@@ -144,6 +144,10 @@ class KuisTakePage {
     }
 
     async render() {
+        const urlParts = window.location.hash.split('/');
+        const moduleId = urlParts[2];
+        this._moduleId = moduleId;
+
         return `
             <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
                 <div class="flex flex-col lg:flex-row gap-8">
@@ -158,7 +162,7 @@ class KuisTakePage {
                                 </div>
                             </div>
                             <div class="mt-4 pt-4 border-t border-gray-200">
-                                <a id="btn-kembali-modul" href="#" class="flex items-center justify-center text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors">
+                                <a href="#/modul/${moduleId}" class="flex items-center justify-center text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors">
                                     &larr; Kembali ke Modul
                                 </a>
                             </div>
@@ -175,11 +179,6 @@ class KuisTakePage {
     }
 
     async afterRender() {
-        const urlParts = window.location.hash.split('/');
-        this._moduleId = urlParts[2];
-        const contentArea = document.getElementById('quiz-content-area');
-        
-        document.getElementById('btn-kembali-modul').href = `#/modul/${this._moduleId}`;
 
         try {
             const data = await getQuizByModule(this._moduleId);
@@ -200,11 +199,9 @@ class KuisTakePage {
             const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
 
             if (isTeacher) {
-                // Tampilan Khusus Teacher / Super Admin
                 contentArea.innerHTML = this._createTeacherViewTemplate();
                 contentArea.style.opacity = '1';
             } else {
-                // Tampilan Pre-kuis untuk Siswa
                 contentArea.innerHTML = this._createPreQuizTemplate();
                 
                 const startBtn = document.getElementById('btn-mulai-kuis');
