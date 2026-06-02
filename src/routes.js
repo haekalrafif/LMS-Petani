@@ -10,6 +10,8 @@ import RegisterPage from './pages/register-page.js';
 import SuperAdminPage from './pages/superadmin-page.js';
 import TopicAddPage from './pages/topic-add-page.js';
 import TopicEditPage from './pages/topic-edit-page.js';
+import KuisAddPage from './pages/kuis-add-page.js';
+import KuisTakePage from './pages/kuis-take-page.js';
 
 export const routes = {
   '/': DasborPage,
@@ -26,4 +28,6 @@ export const routes = {
   '/modul/:moduleId/topic-edit/:topicId': TopicEditPage,
   '/modul/:moduleId/materi-edit/:materialId': ModulMateriEditPage,
   '/superadmin': SuperAdminPage,
+  '/modul/:id/tambah-kuis': KuisAddPage,  
+  '/kuis/:id': KuisTakePage,
 };
