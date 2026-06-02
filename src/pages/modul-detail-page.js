@@ -1,10 +1,11 @@
-import { getModule, getCurrentUser, getModuleProgress, markMaterialAsCompleted, getQuizByModule } from '../utils/api.js';
+import { getModule, getCurrentUser, getModuleProgress, markMaterialAsCompleted, getQuizByModule, getMyQuizResult } from '../utils/api.js';
 
 class ModulDetailPage {
   constructor() {
     this._module = null;
     this._user = null;
-    this._quiz = null;
+    this._quiz = null; 
+    this._quizResult = null;
     this._activeMaterialId = null;
     this._completedMaterials = [];
     this._allMaterials = [];
@@ -28,11 +29,14 @@ class ModulDetailPage {
     const moduleId = urlParts[2];
     const materialIdFromUrl = urlParts.length > 3 ? urlParts[3] : null;
 
+    this._user = getCurrentUser();
+    const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
+    const isModuleAuthor = this._user && (this._user.id === this._module?.author_id || this._user.role === 'super admin');
+
     try {
-        this._user = getCurrentUser();
         const [moduleData, progressData] = await Promise.all([
             getModule(moduleId),
-            this._user && this._user.role !== 'teacher' && this._user.role !== 'super admin' ? getModuleProgress(moduleId) : Promise.resolve({ completedMaterialIds: [] })
+            !isTeacher ? getModuleProgress(moduleId) : Promise.resolve({ completedMaterialIds: [] })
         ]);
         
         this._module = moduleData;
@@ -48,8 +52,14 @@ class ModulDetailPage {
 
     try {
         this._quiz = await getQuizByModule(moduleId);
+        if (this._quiz && !isTeacher) {
+            this._quizResult = await getMyQuizResult(this._quiz.id);
+        } else {
+            this._quizResult = null;
+        }
     } catch (error) {
         this._quiz = null;
+        this._quizResult = null;
     }
 
     this._activeMaterialId = this._getFirstUncompletedMaterialId();
@@ -72,8 +82,7 @@ class ModulDetailPage {
         }
     }
 
-    const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
-    const isModuleAuthor = this._user && (this._user.id === this._module.author_id || this._user.role === 'super admin');
+    // Persentase sekarang otomatis menghitung kuis
     const { percentage } = this._calculateProgress();
 
     return `
@@ -88,7 +97,7 @@ class ModulDetailPage {
                 <div>
                     <p id="progress-text" class="text-xs font-bold text-gray-900 mb-1">${percentage}% Selesai</p>
                     <div id="progress-container" class="w-full bg-gray-200 rounded-full h-2.5">
-                    <div id="progress-bar" class="bg-green-700 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                    <div id="progress-bar" class="bg-green-700 h-2.5 rounded-full" style="width: ${percentage}%; transition: width 0.5s ease-in-out;"></div>
                     </div>
                 </div>
                 ` : ''}
@@ -99,7 +108,7 @@ class ModulDetailPage {
                     ${this._generateSidebarList()}
                 </nav>
 
-                ${isModuleAuthor ? `
+                ${isTeacher && (!this._module.author_id || this._module.author_id === this._user.id || this._user.role === 'super admin') ? `
                 <div class="mt-6 flex flex-col gap-3">
                     <a href="#/modul/${this._module.id}/tambah-topik" class="bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-green-700 transition-colors block text-center text-sm shadow-sm">
                         Tambah Topik Baru
@@ -234,21 +243,24 @@ class ModulDetailPage {
       ? this._module.topics.map(topic => this._createTopicSection(topic, isModuleAuthor)).join('')
       : '<p class="text-sm text-gray-500">Belum ada topik.</p>';
 
-    // Jika kuis sudah dibuat, tambahkan menu Evaluasi Kuis di bagian paling bawah
     if (this._quiz) {
-      const lastMaterial = this._allMaterials[this._allMaterials.length - 1];
-      const isQuizUnlocked = isTeacher || (lastMaterial && this._completedMaterials.includes(lastMaterial.id)) || this._allMaterials.length === 0;
+        const lastMaterial = this._allMaterials[this._allMaterials.length - 1];
+        const isQuizUnlocked = isTeacher || (lastMaterial && this._completedMaterials.includes(lastMaterial.id)) || this._allMaterials.length === 0;
+        
+        const isQuizPassed = this._quizResult && this._quizResult.is_passed;
+        const quizCompletedIcon = isQuizPassed ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 ml-auto flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>` : '';
 
-      if (isQuizUnlocked) {
-        html += `
-            <div class="mt-4 border-t border-gray-200 pt-3">
-                <a href="#/kuis/${this._module.id}" class="flex items-center p-3 text-green-700 font-bold bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-100">
-                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                    Evaluasi Kuis
-                </a>
-            </div>
-        `;
-      } else {
+        if (isQuizUnlocked) {
+            html += `
+                <div class="mt-4 border-t border-gray-200 pt-3 flex items-center">
+                    <a href="#/kuis/${this._module.id}" class="flex flex-grow items-center p-3 text-green-700 font-bold bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-100">
+                        <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                        <span class="flex-grow">Evaluasi Kuis</span>
+                        ${quizCompletedIcon}
+                    </a>
+                </div>
+            `;
+        } else {
             html += `
                 <div class="mt-4 border-t border-gray-200 pt-3">
                     <div class="flex items-center p-3 text-gray-400 font-bold bg-gray-50 rounded-lg border border-gray-200 cursor-not-allowed" onclick="alert('Selesaikan semua materi terlebih dahulu untuk membuka Evaluasi Kuis.')">
@@ -264,10 +276,19 @@ class ModulDetailPage {
   }
 
   _calculateProgress() {
-    const totalMaterials = this._allMaterials.length;
-    if (totalMaterials === 0) return { percentage: 0 };
-    const completedCount = this._completedMaterials.length;
-    return { percentage: Math.round((completedCount / totalMaterials) * 100) };
+    let totalItems = this._allMaterials.length;
+    let completedItems = this._completedMaterials.length;
+
+    // Jika modul ini memiliki kuis, jadikan kuis sebagai 1 item wajib diselesaikan
+    if (this._quiz) {
+        totalItems += 1;
+        if (this._quizResult && this._quizResult.is_passed) {
+            completedItems += 1;
+        }
+    }
+
+    if (totalItems === 0) return { percentage: 0 };
+    return { percentage: Math.round((completedItems / totalItems) * 100) };
   }
 
   _updateProgressBar() {
@@ -334,7 +355,7 @@ class ModulDetailPage {
           this._completedMaterials.push(materialId);
           
           const sidebar = document.querySelector('#materials-list-sidebar');
-          sidebar.innerHTML = this._generateSidebarList(); // Merender ulang list topik & kuis
+          sidebar.innerHTML = this._generateSidebarList(); 
           this._restoreAccordionState();
           this._addAccordionListeners(); 
           this._addMaterialLinkListeners();
@@ -433,7 +454,7 @@ class ModulDetailPage {
               `;
           } else {
               buttonsHtml += `
-                  <button disabled class="w-full lg:w-auto justify-center bg-gray-300 text-gray-500 px-4 py-3 rounded-lg cursor-not-allowed flex items-center gap-2 shadow-none font-medium">
+                  <button disabled class="w-full lg:w-auto justify-center bg-gray-300 text-gray-500 px-4 py-3 rounded-lg cursor-not-allowed flex items-center gap-2 shadow-none font-medium" onclick="alert('Tandai materi ini sebagai selesai terlebih dahulu.')">
                       Materi Selanjutnya <span>&rarr;</span>
                   </button>
               `;
