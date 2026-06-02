@@ -179,6 +179,7 @@ class KuisTakePage {
     }
 
     async afterRender() {
+        const contentArea = document.getElementById('quiz-content-area');
 
         try {
             const data = await getQuizByModule(this._moduleId);
