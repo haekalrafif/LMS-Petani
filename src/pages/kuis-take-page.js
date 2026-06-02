@@ -4,7 +4,7 @@ class KuisTakePage {
     constructor() {
         this._quizData = null;
         this._questions = [];
-        this._user = getCurrentUser();
+        this._user = null;
     }
 
     // --- TEMPLATE STUDENT ---
@@ -144,6 +144,7 @@ class KuisTakePage {
     }
 
     async render() {
+        this._user = getCurrentUser();
         const urlParts = window.location.hash.split('/');
         const moduleId = urlParts[2];
         this._moduleId = moduleId;
@@ -179,6 +180,7 @@ class KuisTakePage {
     }
 
     async afterRender() {
+        this._user = getCurrentUser();
         const contentArea = document.getElementById('quiz-content-area');
 
         try {

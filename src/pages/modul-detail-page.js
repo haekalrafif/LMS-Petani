@@ -235,6 +235,10 @@ class ModulDetailPage {
 
     // Jika kuis sudah dibuat, tambahkan menu Evaluasi Kuis di bagian paling bawah
     if (this._quiz) {
+      const lastMaterial = this._allMaterials[this._allMaterials.length - 1];
+      const isQuizUnlocked = isTeacher || (lastMaterial && this._completedMaterials.includes(lastMaterial.id)) || this._allMaterials.length === 0;
+
+      if (isQuizUnlocked) {
         html += `
             <div class="mt-4 border-t border-gray-200 pt-3">
                 <a href="#/kuis/${this._module.id}" class="flex items-center p-3 text-green-700 font-bold bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-100">
@@ -243,6 +247,16 @@ class ModulDetailPage {
                 </a>
             </div>
         `;
+      } else {
+            html += `
+                <div class="mt-4 border-t border-gray-200 pt-3">
+                    <div class="flex items-center p-3 text-gray-400 font-bold bg-gray-50 rounded-lg border border-gray-200 cursor-not-allowed" onclick="alert('Selesaikan semua materi terlebih dahulu untuk membuka Evaluasi Kuis.')">
+                        <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        Evaluasi Kuis (Terkunci)
+                    </div>
+                </div>
+            `;
+        }
     }
 
     return html;
@@ -425,11 +439,21 @@ class ModulDetailPage {
           }
       } else {
            if (this._quiz) {
-               buttonsHtml += `
-                   <a href="#/kuis/${this._module.id}" class="w-full lg:w-auto justify-center bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm font-medium">
-                       Kerjakan Kuis Evaluasi <span>&rarr;</span>
-                   </a>
-               `;
+               const isLastMaterialCompleted = this._completedMaterials.includes(material.id);
+               
+               if (isTeacher || isLastMaterialCompleted) {
+                   buttonsHtml += `
+                       <a href="#/kuis/${this._module.id}" class="w-full lg:w-auto justify-center bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm font-medium">
+                           Kerjakan Kuis Evaluasi <span>&rarr;</span>
+                       </a>
+                   `;
+               } else {
+                   buttonsHtml += `
+                       <button disabled class="w-full lg:w-auto justify-center bg-gray-300 text-gray-500 px-4 py-3 rounded-lg cursor-not-allowed flex items-center gap-2 shadow-none font-medium" onclick="alert('Tandai materi ini sebagai selesai terlebih dahulu.')">
+                           Kerjakan Kuis Evaluasi (Terkunci) <span>&rarr;</span>
+                       </button>
+                   `;
+               }
            } else {
                buttonsHtml += `<div class="hidden lg:block"></div>`;
            }
