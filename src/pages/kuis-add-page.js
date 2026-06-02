@@ -165,7 +165,8 @@ const KuisAddPage = {
             try {
                 await createQuiz(quizDataPayload);
                 alert('Kuis berhasil disimpan!');
-                window.location.hash = `#/modul/${moduleId}`;
+                window.location.replace(`#/modul/${moduleId}`);
+                setTimeout(() => window.location.reload(), 100);
             } catch (error) {
                 alert(`Gagal menyimpan kuis: ${error.message}`);
                 btnSimpan.disabled = false;

@@ -1,11 +1,13 @@
-import { getQuizByModule, submitQuizResult } from '../utils/api.js';
+import { getQuizByModule, submitQuizResult, getCurrentUser } from '../utils/api.js';
 
 class KuisTakePage {
     constructor() {
         this._quizData = null;
         this._questions = [];
+        this._user = getCurrentUser();
     }
 
+    // --- TEMPLATE STUDENT ---
     _createPreQuizTemplate() {
         return `
             <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-opacity duration-300">
@@ -19,7 +21,7 @@ class KuisTakePage {
                     <h4 class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">Informasi Kuis:</h4>
                     <ul class="space-y-3">
                         <li class="flex items-center text-gray-700">
-                            <svg class="w-5 h-5 text-green-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <svg class="w-5 h-5 text-green-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
                             Jumlah Soal: <strong class="ml-1">${this._quizData.totalQuestions} Butir Soal</strong>
                         </li>
                         <li class="flex items-center text-gray-700">
@@ -98,6 +100,49 @@ class KuisTakePage {
         `;
     }
 
+    // --- TEMPLATE TEACHER & SUPER ADMIN ---
+    _createTeacherViewTemplate() {
+        return `
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 transition-opacity duration-300">
+                <div class="border-b border-gray-200 pb-4 mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800 uppercase">Pratinjau Kuis</h2>
+                    <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide flex items-center gap-1 self-start sm:self-auto">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        Mode Guru / Admin
+                    </span>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg mb-8 border border-gray-200 text-sm text-gray-700">
+                    <p><strong>Judul Kuis:</strong> ${this._quizData.title}</p>
+                    <p><strong>Syarat Kelulusan:</strong> ${this._quizData.minScore}</p>
+                    <p><strong>Jumlah Soal:</strong> ${this._quizData.totalQuestions}</p>
+                </div>
+
+                <div class="space-y-12">
+                    ${this._questions.map((q, index) => `
+                        <div class="question-item">
+                            <p class="text-sm text-blue-700 font-bold mb-2 uppercase tracking-widest bg-blue-50 inline-block px-3 py-1 rounded border border-blue-100">Soal ${index + 1}</p>
+                            <p class="text-lg md:text-xl font-medium text-gray-800 mb-6 leading-relaxed">${q.question_text}</p>
+                            
+                            <div class="space-y-3">
+                                ${['A', 'B', 'C', 'D'].map(opt => {
+                                    const isCorrect = q.correct_answer === opt;
+                                    return `
+                                    <div class="flex items-center p-4 border rounded-xl ${isCorrect ? 'bg-green-50 border-green-300 ring-1 ring-green-400' : 'border-gray-200 bg-white opacity-60'}">
+                                        <span class="font-bold w-8 ${isCorrect ? 'text-green-700 text-lg' : 'text-gray-500'}">${opt}.</span>
+                                        <span class="ml-2 ${isCorrect ? 'text-green-800 font-semibold' : 'text-gray-600'}">${q[`option_${opt.toLowerCase()}`]}</span>
+                                        ${isCorrect ? `<svg class="w-6 h-6 text-green-600 ml-auto shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>` : ''}
+                                    </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
     async render() {
         return `
             <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
@@ -111,6 +156,11 @@ class KuisTakePage {
                                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                                     Memuat Data...
                                 </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <a id="btn-kembali-modul" href="#" class="flex items-center justify-center text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors">
+                                    &larr; Kembali ke Modul
+                                </a>
                             </div>
                         </div>
                     </aside>
@@ -128,12 +178,12 @@ class KuisTakePage {
         const urlParts = window.location.hash.split('/');
         this._moduleId = urlParts[2];
         const contentArea = document.getElementById('quiz-content-area');
+        
+        document.getElementById('btn-kembali-modul').href = `#/modul/${this._moduleId}`;
 
         try {
-            // Ambil data kuis dan soal dari database berdasarkan moduleId
             const data = await getQuizByModule(this._moduleId);
             
-            // Format data dari API agar sesuai dengan struktur template
             this._quizData = {
                 id: data.id,
                 title: data.title,
@@ -142,27 +192,33 @@ class KuisTakePage {
             };
             this._questions = data.questions || [];
 
-            // Perbarui judul sidebar
             document.getElementById('sidebar-quiz-title').innerHTML = `
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 ${this._quizData.title}
             `;
 
-            // Tampilkan halaman Pre-Kuis
-            contentArea.innerHTML = this._createPreQuizTemplate();
-            
-            // Pasang listener untuk tombol "Mulai Kuis"
-            const startBtn = document.getElementById('btn-mulai-kuis');
-            if (startBtn) {
-                startBtn.addEventListener('click', () => {
-                    contentArea.style.opacity = '0';
-                    setTimeout(() => {
-                        contentArea.innerHTML = this._createQuestionsTemplate();
-                        contentArea.style.opacity = '1';
-                        contentArea.style.transition = 'opacity 0.5s ease-in-out';
-                        this._attachFormSubmitListener();
-                    }, 300);
-                });
+            const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
+
+            if (isTeacher) {
+                // Tampilan Khusus Teacher / Super Admin
+                contentArea.innerHTML = this._createTeacherViewTemplate();
+                contentArea.style.opacity = '1';
+            } else {
+                // Tampilan Pre-kuis untuk Siswa
+                contentArea.innerHTML = this._createPreQuizTemplate();
+                
+                const startBtn = document.getElementById('btn-mulai-kuis');
+                if (startBtn) {
+                    startBtn.addEventListener('click', () => {
+                        contentArea.style.opacity = '0';
+                        setTimeout(() => {
+                            contentArea.innerHTML = this._createQuestionsTemplate();
+                            contentArea.style.opacity = '1';
+                            contentArea.style.transition = 'opacity 0.5s ease-in-out';
+                            this._attachFormSubmitListener();
+                        }, 300);
+                    });
+                }
             }
 
         } catch (error) {
@@ -190,7 +246,6 @@ class KuisTakePage {
                 const formData = new FormData(form);
                 let correctCount = 0;
 
-                // Hitung jawaban benar di frontend
                 this._questions.forEach((q) => {
                     const ans = formData.get(`question_${q.id}`);
                     if (ans === q.correct_answer) correctCount++;
@@ -200,13 +255,11 @@ class KuisTakePage {
                 const isPassed = score >= this._quizData.minScore;
 
                 try {
-                    // Simpan hasil nilai ke database
                     await submitQuizResult(this._quizData.id, {
                         score: score,
                         is_passed: isPassed ? 1 : 0
                     });
 
-                    // Tampilkan halaman Hasil
                     const contentArea = document.getElementById('quiz-content-area');
                     contentArea.style.opacity = '0';
                     setTimeout(() => {
