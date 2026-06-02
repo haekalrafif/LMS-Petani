@@ -228,6 +228,7 @@ class ModulDetailPage {
   
   _generateSidebarList() {
     const isModuleAuthor = this._user && (this._user.id === this._module.author_id || this._user.role === 'super admin');
+    const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
     
     let html = this._module.topics && this._module.topics.length > 0
       ? this._module.topics.map(topic => this._createTopicSection(topic, isModuleAuthor)).join('')
