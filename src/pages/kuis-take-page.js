@@ -20,7 +20,7 @@ class KuisTakePage {
                     <h4 class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">Informasi Kuis:</h4>
                     <ul class="space-y-3">
                         <li class="flex items-center text-gray-700">
-                            <svg class="w-5 h-5 text-green-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <svg class="w-5 h-5 text-green-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
                             Jumlah Soal: <strong class="ml-1">${this._quizData.totalQuestions} Butir Soal</strong>
                         </li>
                         <li class="flex items-center text-gray-700">
@@ -110,30 +110,11 @@ class KuisTakePage {
     }
 
     _createResultTemplate(score, isPassed, correctCount, userAnswers = []) {
-        return `
-            <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center transition-opacity duration-300 mb-8">
-                <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-sm ${isPassed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
-                    ${isPassed 
-                        ? `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
-                        : `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`
-                    }
-                </div>
-                <h2 class="text-3xl font-bold mb-2 text-center ${isPassed ? 'text-green-700' : 'text-red-700'}">
-                    ${isPassed ? 'Selamat, Anda Lulus!' : 'Maaf, Anda Belum Lulus.'}
-                </h2>
-                <p class="text-gray-600 mb-8 text-center">Kuis: ${this._quizData.title}</p>
-                
-                <div class="w-full bg-gray-50 p-8 rounded-xl border border-gray-200 mb-8 flex flex-col items-center text-center">
-                    <p class="text-gray-500 font-bold uppercase tracking-widest mb-2">Skor Anda</p>
-                    <div class="text-6xl font-black ${isPassed ? 'text-green-600' : 'text-red-600'} mb-4">${score}</div>
-                    <div class="flex items-center gap-2 text-gray-700 font-medium">
-                        Anda menjawab ${correctCount} dari ${this._quizData.totalQuestions} soal dengan benar.
-                    </div>
-                    <p class="text-sm text-gray-500 mt-2">(Syarat lulus: ${this._quizData.minScore})</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+        // Blok ulasan soal hanya di-generate jika siswa dinyatakan lulus (isPassed)
+        let reviewSectionHtml = '';
+        if (isPassed) {
+            reviewSectionHtml = `
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 mt-8">
                 <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Ulasan Jawaban Anda</h3>
                 <div class="space-y-10">
                     ${this._questions.map((q, index) => {
@@ -185,6 +166,44 @@ class KuisTakePage {
                     }).join('')}
                 </div>
             </div>
+            `;
+        }
+
+        return `
+            <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center transition-opacity duration-300">
+                <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-sm ${isPassed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
+                    ${isPassed 
+                        ? `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+                        : `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`
+                    }
+                </div>
+                <h2 class="text-3xl font-bold mb-2 text-center ${isPassed ? 'text-green-700' : 'text-red-700'}">
+                    ${isPassed ? 'Selamat, Anda Lulus!' : 'Maaf, Anda Belum Lulus.'}
+                </h2>
+                <p class="text-gray-600 mb-8 text-center">Kuis: ${this._quizData.title}</p>
+                
+                <div class="w-full bg-gray-50 p-8 rounded-xl border border-gray-200 mb-8 flex flex-col items-center text-center">
+                    <p class="text-gray-500 font-bold uppercase tracking-widest mb-2">Skor Anda</p>
+                    <div class="text-6xl font-black ${isPassed ? 'text-green-600' : 'text-red-600'} mb-4">${score}</div>
+                    <div class="flex items-center gap-2 text-gray-700 font-medium">
+                        Anda menjawab ${correctCount} dari ${this._quizData.totalQuestions} soal dengan benar.
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">(Syarat lulus: ${this._quizData.minScore})</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-2/3">
+                    ${!isPassed ? `
+                    <button id="btn-ulangi-kuis" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-lg block">
+                        ULANGI KUIS
+                    </button>
+                    ` : ''}
+                    <a href="#/modul-detail/${this._moduleId}" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-lg text-center block">
+                        KEMBALI KE MODUL
+                    </a>
+                </div>
+            </div>
+            
+            ${reviewSectionHtml}
         `;
     }
 
@@ -203,7 +222,7 @@ class KuisTakePage {
                             <hr class="my-3 mx-[-1.25rem] border-t border-gray-200" />
                             <div class="flex flex-col gap-2">
                                 <div id="sidebar-quiz-title" class="flex items-center gap-2 text-green-700 font-semibold p-2 bg-green-50 rounded">
-                                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                                     Memuat Data...
                                 </div>
                             </div>
@@ -247,15 +266,12 @@ class KuisTakePage {
             const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
 
             if (isTeacher) {
-                // Tampilan KHUSUS Guru
                 contentArea.innerHTML = this._createTeacherViewTemplate();
                 contentArea.style.opacity = '1';
             } else {
-                // Mengecek apakah Siswa sudah pernah mengerjakan
                 const existingResult = await getMyQuizResult(this._quizData.id);
                 
                 if (existingResult) {
-                    // LANGSUNG RENDER HASIL & ULASAN SOAL (Lewati Pre-kuis)
                     let correctCount = 0;
                     if (existingResult.answers) {
                         this._questions.forEach(q => {
@@ -265,8 +281,10 @@ class KuisTakePage {
                     }
                     contentArea.innerHTML = this._createResultTemplate(existingResult.score, existingResult.is_passed, correctCount, existingResult.answers);
                     contentArea.style.opacity = '1';
+                    
+                    // Attach listener untuk tombol "Ulangi Kuis" (jika gagal)
+                    this._attachRetakeListener();
                 } else {
-                    // JIKA BELUM PERNAH, Render Layar Pre-kuis
                     contentArea.innerHTML = this._createPreQuizTemplate();
                     const startBtn = document.getElementById('btn-mulai-kuis');
                     if (startBtn) {
@@ -292,6 +310,23 @@ class KuisTakePage {
                 </div>
             `;
             document.getElementById('sidebar-quiz-title').textContent = "Belum Ada Kuis";
+        }
+    }
+
+    _attachRetakeListener() {
+        const btnUlangi = document.getElementById('btn-ulangi-kuis');
+        if (btnUlangi) {
+            btnUlangi.addEventListener('click', () => {
+                const contentArea = document.getElementById('quiz-content-area');
+                contentArea.style.opacity = '0';
+                setTimeout(() => {
+                    // LANGSUNG RENDER PERTANYAAN (Tanpa Pre-Kuis)
+                    contentArea.innerHTML = this._createQuestionsTemplate();
+                    contentArea.style.opacity = '1';
+                    contentArea.style.transition = 'opacity 0.5s ease-in-out';
+                    this._attachFormSubmitListener();
+                }, 300);
+            });
         }
     }
 
@@ -324,7 +359,6 @@ class KuisTakePage {
                 const isPassed = score >= this._quizData.minScore;
 
                 try {
-                    // Kirim Nilai + Array Jawaban ke Database
                     await submitQuizResult(this._quizData.id, {
                         score: score,
                         is_passed: isPassed ? 1 : 0,
@@ -336,6 +370,8 @@ class KuisTakePage {
                     setTimeout(() => {
                         contentArea.innerHTML = this._createResultTemplate(score, isPassed, correctCount, userAnswersArray);
                         contentArea.style.opacity = '1';
+                        // Attach ulang jika gagal lagi
+                        this._attachRetakeListener();
                     }, 300);
 
                 } catch (error) {
