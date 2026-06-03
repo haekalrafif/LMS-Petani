@@ -11,7 +11,7 @@ class KuisTakePage {
         return `
             <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-opacity duration-300">
                 <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 </div>
                 <h2 class="text-3xl font-bold text-gray-800 mb-6 uppercase tracking-wide">Kuis: ${this._quizData.title}</h2>
                 <div class="w-full bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-200 mb-8 text-left">
@@ -140,22 +140,25 @@ class KuisTakePage {
                                         if (opt === q.correct_answer && opt === selectedOpt) {
                                             bgClass = "bg-green-100 border-green-400 ring-1 ring-green-400";
                                             textClass = "text-green-800 font-bold";
-                                            infoLabel = '✔️ <span class="hidden sm:inline font-semibold ml-1">(Jawaban Anda)</span>';
+                                            infoLabel = '<div class="mt-2 md:mt-0 md:ml-auto text-sm text-green-800 shrink-0 font-semibold bg-green-200 px-3 py-1 md:bg-transparent md:p-0 rounded-full md:rounded-none inline-flex items-center gap-1">✔️ <span class="md:inline">Jawaban Anda</span></div>';
                                         } else if (opt === selectedOpt && opt !== q.correct_answer) {
                                             bgClass = "bg-red-100 border-red-400 ring-1 ring-red-400";
                                             textClass = "text-red-800 font-bold";
-                                            infoLabel = '❌ <span class="hidden sm:inline font-semibold ml-1">(Pilihan Anda)</span>';
+                                            infoLabel = '<div class="mt-2 md:mt-0 md:ml-auto text-sm text-red-800 shrink-0 font-semibold bg-red-200 px-3 py-1 md:bg-transparent md:p-0 rounded-full md:rounded-none inline-flex items-center gap-1">❌ <span class="md:inline">Jawaban Anda</span></div>';
                                         } else if (opt === q.correct_answer && opt !== selectedOpt) {
                                             bgClass = "bg-green-50 border-green-300 border-dashed";
                                             textClass = "text-green-700 font-bold";
-                                            infoLabel = '✔️ <span class="hidden sm:inline font-semibold ml-1">(Jawaban Benar)</span>';
+                                            infoLabel = '<div class="mt-2 md:mt-0 md:ml-auto text-sm text-green-700 shrink-0 font-semibold bg-green-100 px-3 py-1 md:bg-transparent md:p-0 rounded-full md:rounded-none inline-flex items-center gap-1">✔️ <span class="md:inline">Jawaban Benar</span></div>';
                                         }
 
                                         return `
-                                        <div class="flex items-center p-3 md:p-4 border rounded-xl ${bgClass}">
-                                            <span class="font-bold w-8 shrink-0 ${textClass}">${opt}.</span>
-                                            <span class="ml-2 flex-1 break-words pr-2 ${textClass}">${q['option_' + opt.toLowerCase()]}</span>
-                                            <span class="ml-auto text-sm ${textClass} shrink-0 text-right">${infoLabel}</span>
+                                        <div class="flex flex-col md:flex-row md:items-center p-3 md:p-4 border rounded-xl ${bgClass}">
+                                            <div class="flex items-start md:items-center w-full">
+                                                <span class="font-bold w-8 shrink-0 ${textClass}">${opt}.</span>
+                                                <span class="ml-2 flex-1 break-words pr-2 ${textClass}">${q['option_' + opt.toLowerCase()]}</span>
+                                                <div class="hidden md:block">${infoLabel}</div>
+                                            </div>
+                                            <div class="md:hidden self-start ml-10">${infoLabel}</div>
                                         </div>
                                         `;
                                     }).join('')}
@@ -283,7 +286,6 @@ class KuisTakePage {
                     contentArea.style.opacity = '1';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                    // Attach listener untuk tombol "Ulangi Kuis" (jika gagal)
                     this._attachRetakeListener();
                 } else {
                     contentArea.innerHTML = this._createPreQuizTemplate();
@@ -322,7 +324,6 @@ class KuisTakePage {
                 const contentArea = document.getElementById('quiz-content-area');
                 contentArea.style.opacity = '0';
                 setTimeout(() => {
-                    // LANGSUNG RENDER PERTANYAAN (Tanpa Pre-Kuis)
                     contentArea.innerHTML = this._createQuestionsTemplate();
                     contentArea.style.opacity = '1';
                     contentArea.style.transition = 'opacity 0.5s ease-in-out';
