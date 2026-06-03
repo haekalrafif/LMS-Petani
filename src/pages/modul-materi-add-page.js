@@ -7,9 +7,14 @@ const ModulMateriAddPage = {
     const module = await getModule(moduleId);
 
     return `
-      <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
-        <h2 class="text-3xl font-bold mb-4">Tambah Materi Baru untuk Modul ${module.title}</h2>
-        <form id="add-material-form" class="bg-white p-8 rounded-lg shadow-md">
+      <div class="container mx-auto py-8 px-4 sm:px-10 md:px-20 lg:px-40">
+        <form id="add-material-form" class="bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+          <h2 class="text-2xl md:text-3xl font-bold text-green-700 mb-6 md:mb-8 border-b border-gray-200 pb-4">Tambah Materi Baru</h2>
+          
+          <div class="bg-green-50 p-4 rounded-lg mb-6 border border-green-100">
+            <p class="text-sm text-green-800"><span class="font-bold">Modul:</span> ${module.title}</p>
+          </div>
+
           <div class="mb-4">
             <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Materi</label>
             <input type="text" id="title" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -19,8 +24,8 @@ const ModulMateriAddPage = {
             <input type="text" id="youtube_url" name="youtube_url" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
           </div>
           
-          <div class="mb-6">
-            <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Materi (Opsional)</label>
+          <div class="mb-6 mt-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Materi (Opsional, JPG)</label>
             
             <div id="preview-container" class="mb-4 hidden">
                 <img id="image-preview" src="" alt="Preview" class="w-48 h-auto rounded-lg shadow-sm border border-gray-200 object-cover">
@@ -41,15 +46,16 @@ const ModulMateriAddPage = {
             <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Penjelasan Materi</label>
             <textarea id="content" name="content" rows="10" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
           </div>
-          <div class="flex items-center justify-between">
-            <button type="submit" id="save-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          
+          <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-6">
+            <button type="submit" id="save-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:shadow-outline">
               Simpan Materi
             </button>
-            <a href="#/modul-detail/${moduleId}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+            <a href="#/modul-detail/${moduleId}" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800">
               Batal
             </a>
           </div>
-          <div id="error-message" class="mt-4 text-red-600"></div>
+          <div id="error-message" class="mt-4 text-red-600 font-medium"></div>
         </form>
       </div>
     `;
@@ -92,21 +98,12 @@ const ModulMateriAddPage = {
           setTimeout(() => loading.style.opacity = '1', 10);
       }
 
-      const title = form.title.value;
-      const content = form.content.value;
-      const youtube_url = form.youtube_url.value;
-      const imageFile = form.image.files[0]; 
-
       const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
+      formData.append('title', form.title.value);
+      formData.append('content', form.content.value);
       formData.append('topic_id', topicId);
-      if (youtube_url) {
-        formData.append('youtube_url', youtube_url);
-      }
-      if (imageFile) {
-        formData.append('image', imageFile);
-      }
+      if (form.youtube_url.value) formData.append('youtube_url', form.youtube_url.value);
+      if (form.image.files[0]) formData.append('image', form.image.files[0]);
 
       try {
         await createMaterial(moduleId, formData); 
@@ -117,9 +114,7 @@ const ModulMateriAddPage = {
         saveButton.disabled = false;
         if (loading) {
             loading.style.opacity = '0';
-            setTimeout(() => {
-                if (loading.style.opacity === '0') loading.style.display = 'none';
-            }, 500);
+            setTimeout(() => { if (loading.style.opacity === '0') loading.style.display = 'none'; }, 500);
         }
       }
     });

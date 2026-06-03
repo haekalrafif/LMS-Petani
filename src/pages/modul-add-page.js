@@ -3,9 +3,10 @@ import { createModule } from '../utils/api.js';
 const ModulAddPage = {
   async render() {
     return `
-      <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
-        <h2 class="text-3xl font-bold mb-4">Tambah Modul Baru</h2>
-        <form id="add-module-form" class="bg-white p-8 rounded-lg shadow-md">
+      <div class="container mx-auto py-8 px-4 sm:px-10 md:px-20 lg:px-40">
+        <form id="add-module-form" class="bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+          <h2 class="text-2xl md:text-3xl font-bold text-green-700 mb-6 md:mb-8 border-b border-gray-200 pb-4">Tambah Modul Baru</h2>
+          
           <div class="mb-4">
             <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Modul</label>
             <input type="text" id="title" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -16,7 +17,7 @@ const ModulAddPage = {
             <p id="char-count" class="text-sm text-gray-500 -mt-2">155 karakter tersisa</p>
           </div>
           
-          <div class="mb-8">
+          <div class="mb-8 mt-4">
             <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Sampul Modul</label>
             
             <div id="preview-container" class="mb-4 hidden">
@@ -34,15 +35,15 @@ const ModulAddPage = {
             <p id="file-name-display" class="mt-2 text-sm text-green-700 font-medium hidden"></p>
           </div>
 
-          <div class="flex items-center justify-between">
-            <button type="submit" id="save-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-6">
+            <button type="submit" id="save-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:shadow-outline">
               Simpan Modul
             </button>
-            <a href="#/modul" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+            <a href="#/modul" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800">
               Batal
             </a>
           </div>
-          <div id="error-message" class="mt-4 text-red-600"></div>
+          <div id="error-message" class="mt-4 text-red-600 font-medium"></div>
         </form>
       </div>
     `;
@@ -79,7 +80,6 @@ const ModulAddPage = {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.textContent = '';
-
       saveButton.disabled = true;
       if (loading) {
           loading.style.display = 'flex';
@@ -87,14 +87,10 @@ const ModulAddPage = {
           setTimeout(() => loading.style.opacity = '1', 10);
       }
 
-      const title = form.title.value;
-      const short_description = form.short_description.value; 
-      const imageFile = form.image.files[0];
-
       const formData = new FormData();
-      formData.append('title', title);
-      formData.append('short_description', short_description); 
-      formData.append('image', imageFile); 
+      formData.append('title', form.title.value);
+      formData.append('short_description', form.short_description.value); 
+      formData.append('image', form.image.files[0]); 
 
       try {
         await createModule(formData); 
@@ -105,9 +101,7 @@ const ModulAddPage = {
         saveButton.disabled = false;
         if (loading) {
             loading.style.opacity = '0';
-            setTimeout(() => {
-                if (loading.style.opacity === '0') loading.style.display = 'none';
-            }, 500);
+            setTimeout(() => { if (loading.style.opacity === '0') loading.style.display = 'none'; }, 500);
         }
       } 
     });
