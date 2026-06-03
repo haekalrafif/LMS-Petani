@@ -1,4 +1,4 @@
-import { getQuizByModule, submitQuizResult, getCurrentUser } from '../utils/api.js';
+import { getQuizByModule, submitQuizResult, getCurrentUser, getMyQuizResult } from '../utils/api.js';
 
 class KuisTakePage {
     constructor() {
@@ -7,7 +7,6 @@ class KuisTakePage {
         this._user = null;
     }
 
-    // --- TEMPLATE STUDENT ---
     _createPreQuizTemplate() {
         return `
             <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-opacity duration-300">
@@ -21,7 +20,7 @@ class KuisTakePage {
                     <h4 class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">Informasi Kuis:</h4>
                     <ul class="space-y-3">
                         <li class="flex items-center text-gray-700">
-                            <svg class="w-5 h-5 text-green-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
+                            <svg class="w-5 h-5 text-green-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             Jumlah Soal: <strong class="ml-1">${this._quizData.totalQuestions} Butir Soal</strong>
                         </li>
                         <li class="flex items-center text-gray-700">
@@ -71,36 +70,6 @@ class KuisTakePage {
         `;
     }
 
-    _createResultTemplate(score, isPassed, correctCount) {
-        return `
-            <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-opacity duration-300">
-                <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-sm ${isPassed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
-                    ${isPassed 
-                        ? `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
-                        : `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`
-                    }
-                </div>
-                <h2 class="text-3xl font-bold mb-2 ${isPassed ? 'text-green-700' : 'text-red-700'}">
-                    ${isPassed ? 'Selamat, Anda Lulus!' : 'Maaf, Anda Belum Lulus.'}
-                </h2>
-                <p class="text-gray-600 mb-8">Kuis: ${this._quizData.title}</p>
-                <div class="w-full bg-gray-50 p-8 rounded-xl border border-gray-200 mb-8 flex flex-col items-center">
-                    <p class="text-gray-500 font-bold uppercase tracking-widest mb-2">Skor Anda</p>
-                    <div class="text-6xl font-black ${isPassed ? 'text-green-600' : 'text-red-600'} mb-4">${score}</div>
-                    <div class="flex items-center gap-2 text-gray-700 font-medium">
-                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Anda menjawab ${correctCount} dari ${this._quizData.totalQuestions} soal dengan benar.
-                    </div>
-                    <p class="text-sm text-gray-500 mt-2">(Syarat lulus: ${this._quizData.minScore})</p>
-                </div>
-                <a href="#/modul-detail/${this._moduleId}" class="w-full sm:w-2/3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-8 rounded-xl transition duration-300 shadow-md text-lg block">
-                    KEMBALI KE MODUL
-                </a>
-            </div>
-        `;
-    }
-
-    // --- TEMPLATE TEACHER & SUPER ADMIN ---
     _createTeacherViewTemplate() {
         return `
             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 transition-opacity duration-300">
@@ -111,19 +80,16 @@ class KuisTakePage {
                         Mode Guru / Admin
                     </span>
                 </div>
-                
                 <div class="bg-gray-50 p-4 rounded-lg mb-8 border border-gray-200 text-sm text-gray-700">
                     <p><strong>Judul Kuis:</strong> ${this._quizData.title}</p>
                     <p><strong>Syarat Kelulusan:</strong> ${this._quizData.minScore}</p>
                     <p><strong>Jumlah Soal:</strong> ${this._quizData.totalQuestions}</p>
                 </div>
-
                 <div class="space-y-12">
                     ${this._questions.map((q, index) => `
                         <div class="question-item">
                             <p class="text-sm text-blue-700 font-bold mb-2 uppercase tracking-widest bg-blue-50 inline-block px-3 py-1 rounded border border-blue-100">Soal ${index + 1}</p>
                             <p class="text-lg md:text-xl font-medium text-gray-800 mb-6 leading-relaxed">${q.question_text}</p>
-                            
                             <div class="space-y-3">
                                 ${['A', 'B', 'C', 'D'].map(opt => {
                                     const isCorrect = q.correct_answer === opt;
@@ -143,8 +109,87 @@ class KuisTakePage {
         `;
     }
 
+    _createResultTemplate(score, isPassed, correctCount, userAnswers = []) {
+        return `
+            <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center transition-opacity duration-300 mb-8">
+                <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-sm ${isPassed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
+                    ${isPassed 
+                        ? `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+                        : `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`
+                    }
+                </div>
+                <h2 class="text-3xl font-bold mb-2 text-center ${isPassed ? 'text-green-700' : 'text-red-700'}">
+                    ${isPassed ? 'Selamat, Anda Lulus!' : 'Maaf, Anda Belum Lulus.'}
+                </h2>
+                <p class="text-gray-600 mb-8 text-center">Kuis: ${this._quizData.title}</p>
+                
+                <div class="w-full bg-gray-50 p-8 rounded-xl border border-gray-200 mb-8 flex flex-col items-center text-center">
+                    <p class="text-gray-500 font-bold uppercase tracking-widest mb-2">Skor Anda</p>
+                    <div class="text-6xl font-black ${isPassed ? 'text-green-600' : 'text-red-600'} mb-4">${score}</div>
+                    <div class="flex items-center gap-2 text-gray-700 font-medium">
+                        Anda menjawab ${correctCount} dari ${this._quizData.totalQuestions} soal dengan benar.
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">(Syarat lulus: ${this._quizData.minScore})</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Ulasan Jawaban Anda</h3>
+                <div class="space-y-10">
+                    ${this._questions.map((q, index) => {
+                        const answerObj = userAnswers.find(a => a.question_id === q.id);
+                        const selectedOpt = answerObj ? answerObj.selected_option : null;
+                        const isUserCorrect = selectedOpt === q.correct_answer;
+
+                        return `
+                            <div class="question-item bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <p class="text-sm font-bold mb-3 uppercase tracking-widest ${isUserCorrect ? 'text-green-700' : 'text-red-700'} flex items-center gap-2">
+                                    ${isUserCorrect 
+                                        ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Soal ${index + 1} - BENAR`
+                                        : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Soal ${index + 1} - SALAH`
+                                    }
+                                </p>
+                                <p class="text-lg md:text-xl font-medium text-gray-800 mb-5 leading-relaxed">${q.question_text}</p>
+                                
+                                <div class="space-y-3">
+                                    ${['A', 'B', 'C', 'D'].map(opt => {
+                                        let bgClass = "bg-white border-gray-200";
+                                        let textClass = "text-gray-700";
+                                        let infoLabel = "";
+
+                                        if (opt === q.correct_answer && opt === selectedOpt) {
+                                            bgClass = "bg-green-100 border-green-400 ring-1 ring-green-400";
+                                            textClass = "text-green-800 font-bold";
+                                            infoLabel = "✔️ (Jawaban Anda)";
+                                        } else if (opt === selectedOpt && opt !== q.correct_answer) {
+                                            bgClass = "bg-red-100 border-red-400 ring-1 ring-red-400";
+                                            textClass = "text-red-800 font-bold";
+                                            infoLabel = "❌ (Pilihan Anda)";
+                                        } else if (opt === q.correct_answer && opt !== selectedOpt) {
+                                            bgClass = "bg-green-50 border-green-300 border-dashed";
+                                            textClass = "text-green-700 font-bold";
+                                            infoLabel = "✔️ (Jawaban Benar)";
+                                        }
+
+                                        return `
+                                        <div class="flex items-center p-3 md:p-4 border rounded-xl ${bgClass}">
+                                            <span class="font-bold w-8 ${textClass}">${opt}.</span>
+                                            <span class="ml-2 ${textClass}">${q[`option_${opt.toLowerCase()}`]}</span>
+                                            <span class="ml-auto text-sm ${textClass} font-semibold shrink-0">${infoLabel}</span>
+                                        </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
     async render() {
-        this._user = getCurrentUser();
+        this._user = getCurrentUser(); 
         const urlParts = window.location.hash.split('/');
         const moduleId = urlParts[2];
         this._moduleId = moduleId;
@@ -158,7 +203,7 @@ class KuisTakePage {
                             <hr class="my-3 mx-[-1.25rem] border-t border-gray-200" />
                             <div class="flex flex-col gap-2">
                                 <div id="sidebar-quiz-title" class="flex items-center gap-2 text-green-700 font-semibold p-2 bg-green-50 rounded">
-                                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                                     Memuat Data...
                                 </div>
                             </div>
@@ -180,7 +225,7 @@ class KuisTakePage {
     }
 
     async afterRender() {
-        this._user = getCurrentUser();
+        this._user = getCurrentUser(); 
         const contentArea = document.getElementById('quiz-content-area');
 
         try {
@@ -195,29 +240,46 @@ class KuisTakePage {
             this._questions = data.questions || [];
 
             document.getElementById('sidebar-quiz-title').innerHTML = `
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 ${this._quizData.title}
             `;
 
             const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
 
             if (isTeacher) {
+                // Tampilan KHUSUS Guru
                 contentArea.innerHTML = this._createTeacherViewTemplate();
                 contentArea.style.opacity = '1';
             } else {
-                contentArea.innerHTML = this._createPreQuizTemplate();
+                // Mengecek apakah Siswa sudah pernah mengerjakan
+                const existingResult = await getMyQuizResult(this._quizData.id);
                 
-                const startBtn = document.getElementById('btn-mulai-kuis');
-                if (startBtn) {
-                    startBtn.addEventListener('click', () => {
-                        contentArea.style.opacity = '0';
-                        setTimeout(() => {
-                            contentArea.innerHTML = this._createQuestionsTemplate();
-                            contentArea.style.opacity = '1';
-                            contentArea.style.transition = 'opacity 0.5s ease-in-out';
-                            this._attachFormSubmitListener();
-                        }, 300);
-                    });
+                if (existingResult) {
+                    // LANGSUNG RENDER HASIL & ULASAN SOAL (Lewati Pre-kuis)
+                    let correctCount = 0;
+                    if (existingResult.answers) {
+                        this._questions.forEach(q => {
+                            const ans = existingResult.answers.find(a => a.question_id === q.id);
+                            if (ans && ans.selected_option === q.correct_answer) correctCount++;
+                        });
+                    }
+                    contentArea.innerHTML = this._createResultTemplate(existingResult.score, existingResult.is_passed, correctCount, existingResult.answers);
+                    contentArea.style.opacity = '1';
+                } else {
+                    // JIKA BELUM PERNAH, Render Layar Pre-kuis
+                    contentArea.innerHTML = this._createPreQuizTemplate();
+                    const startBtn = document.getElementById('btn-mulai-kuis');
+                    if (startBtn) {
+                        startBtn.addEventListener('click', () => {
+                            contentArea.style.opacity = '0';
+                            setTimeout(() => {
+                                contentArea.innerHTML = this._createQuestionsTemplate();
+                                contentArea.style.opacity = '1';
+                                contentArea.style.transition = 'opacity 0.5s ease-in-out';
+                                this._attachFormSubmitListener();
+                            }, 300);
+                        });
+                    }
                 }
             }
 
@@ -245,25 +307,34 @@ class KuisTakePage {
 
                 const formData = new FormData(form);
                 let correctCount = 0;
+                let userAnswersArray = [];
 
                 this._questions.forEach((q) => {
                     const ans = formData.get(`question_${q.id}`);
-                    if (ans === q.correct_answer) correctCount++;
+                    if (ans) {
+                        userAnswersArray.push({
+                            question_id: q.id,
+                            selected_option: ans
+                        });
+                        if (ans === q.correct_answer) correctCount++;
+                    }
                 });
 
                 const score = Math.round((correctCount / this._quizData.totalQuestions) * 100);
                 const isPassed = score >= this._quizData.minScore;
 
                 try {
+                    // Kirim Nilai + Array Jawaban ke Database
                     await submitQuizResult(this._quizData.id, {
                         score: score,
-                        is_passed: isPassed ? 1 : 0
+                        is_passed: isPassed ? 1 : 0,
+                        answers: userAnswersArray
                     });
 
                     const contentArea = document.getElementById('quiz-content-area');
                     contentArea.style.opacity = '0';
                     setTimeout(() => {
-                        contentArea.innerHTML = this._createResultTemplate(score, isPassed, correctCount);
+                        contentArea.innerHTML = this._createResultTemplate(score, isPassed, correctCount, userAnswersArray);
                         contentArea.style.opacity = '1';
                     }, 300);
 
