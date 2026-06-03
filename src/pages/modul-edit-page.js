@@ -1,66 +1,55 @@
-import { getModule, updateModule } from '../utils/api.js';
+import { updateModule } from '../utils/api.js';
 
-const ModulEditPage = {
-  async render() {
-    const urlParts = location.hash.split('/');
-    const id = urlParts[urlParts.length - 1];
-
-    try {
-      const module = await getModule(id);
-      const remainingChars = 155 - module.short_description.length;
-      return `
-        <div class="container mx-auto py-8 px-4 sm:px-10 md:px-20 lg:px-40">
-          <form id="edit-module-form" class="bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
-            <h2 class="text-2xl md:text-3xl font-bold text-green-700 mb-6 md:mb-8 border-b border-gray-200 pb-4">Edit Modul</h2>
-            
-            <div class="mb-4">
-              <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Modul</label>
-              <input type="text" id="title" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="${module.title}">
-            </div>
-            <div class="mb-2">
-              <label for="short_description" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Singkat Modul</label>
-              <textarea id="short_description" name="short_description" rows="3" required maxlength="155" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">${module.short_description}</textarea>
-              <p id="char-count" class="text-sm text-gray-500 -mt-2">${remainingChars} karakter tersisa</p>
-            </div>
-            
-            <div class="mb-8 mt-4">
-              <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Sampul Modul</label>
-              
-              <div id="preview-container" class="mb-4 ${module.image_url ? '' : 'hidden'}">
-                  <img id="image-preview" src="${module.image_url || ''}" alt="Gambar Modul" class="w-48 h-auto rounded-lg shadow-sm border border-gray-200 object-cover">
-              </div>
-
-              <label for="image" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                      <p class="mb-1 text-sm text-gray-500"><span class="font-semibold text-green-700">Klik untuk mengganti gambar</span></p>
-                      <p class="text-xs text-gray-500">Format JPG (Opsional)</p>
-                  </div>
-                  <input type="file" id="image" name="image" accept="image/jpeg" class="hidden">
-              </label>
-              <p id="file-name-display" class="mt-2 text-sm text-green-700 font-medium hidden"></p>
-            </div>
-
-            <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-6">
-              <button type="submit" id="update-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:shadow-outline">
-                Update Modul
-              </button>
-              <a href="#/modul" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800">
-                Batal
-              </a>
-            </div>
-            <div id="error-message" class="mt-4 text-red-600 font-medium"></div>
-          </form>
+const ModulEditModal = {
+  render(module) {
+    const remainingChars = 155 - module.short_description.length;
+    return `
+      <form id="edit-module-form">
+        <div class="mb-4">
+          <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Judul Modul</label>
+          <input type="text" id="title" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="${module.title}">
         </div>
-      `;
-    } catch (error) {
-        return `<div class="container mx-auto py-8 px-10 md:px-20 lg:px-40"><p class="text-red-500">Error loading module for editing: ${error.message}</p></div>`;
-    }
+        
+        <div class="mb-2">
+          <label for="short_description" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Singkat Modul</label>
+          <textarea id="short_description" name="short_description" rows="3" required maxlength="155" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">${module.short_description}</textarea>
+          <p id="char-count" class="text-sm text-gray-500 -mt-2">${remainingChars} karakter tersisa</p>
+        </div>
+        
+        <div class="mb-6 mt-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Sampul Modul</label>
+          
+          <div id="preview-container" class="mb-4 ${module.image_url ? '' : 'hidden'}">
+              <img id="image-preview" src="${module.image_url || ''}" alt="Gambar Modul" class="w-48 h-auto rounded-lg shadow-sm border border-gray-200 object-cover">
+          </div>
+
+          <label for="image" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                  <p class="mb-1 text-sm text-gray-500"><span class="font-semibold text-green-700">Klik untuk mengganti gambar</span></p>
+                  <p class="text-xs text-gray-500">Format JPG (Opsional)</p>
+              </div>
+              <input type="file" id="image" name="image" accept="image/jpeg" class="hidden">
+          </label>
+          <p id="file-name-display" class="mt-2 text-sm text-green-700 font-medium hidden"></p>
+        </div>
+
+        <div class="flex justify-end pt-4 border-t border-gray-100 mt-6 gap-3">
+          <button type="button" class="btn-cancel-modal bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:shadow-outline">
+            Batal
+          </button>
+          <button type="submit" id="update-button" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:shadow-outline">
+            Update Modul
+          </button>
+        </div>
+        <div id="error-message" class="mt-4 text-red-600 font-medium text-center"></div>
+      </form>
+    `;
   },
 
-  async afterRender() {
-    const urlParts = location.hash.split('/');
-    const id = urlParts[urlParts.length - 1];
+  afterRender(moduleId, closeCallback, successCallback) {
+    document.querySelector('.btn-cancel-modal').addEventListener('click', closeCallback);
+
     const form = document.querySelector('#edit-module-form');
     const errorMessage = document.querySelector('#error-message');
     const shortDescriptionInput = document.querySelector('#short_description');
@@ -92,8 +81,6 @@ const ModulEditPage = {
         });
     }
 
-    if (!form) return;
-
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.textContent = '';
@@ -110,9 +97,9 @@ const ModulEditPage = {
       if (form.image.files[0]) formData.append('image', form.image.files[0]);
 
       try {
-        await updateModule(id, formData); 
+        await updateModule(moduleId, formData); 
         alert('Modul berhasil diperbarui!');
-        window.location.hash = '#/modul';
+        successCallback();
       } catch (error) {
         errorMessage.textContent = `Error: ${error.message}`;
         updateButton.disabled = false;
@@ -122,7 +109,7 @@ const ModulEditPage = {
         }
       }
     });
-  },
+  }
 };
 
-export default ModulEditPage;
+export default ModulEditModal;

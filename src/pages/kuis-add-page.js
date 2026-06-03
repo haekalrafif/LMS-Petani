@@ -1,38 +1,64 @@
 import { createQuiz, getModule } from '../utils/api.js';
 
-const createQuizAddTemplate = () => `
-    <div class="w-11/12 max-w-4xl mx-auto bg-white p-4 md:p-10 rounded-2xl shadow-sm border border-gray-100 mt-10 mb-10">
-        <h2 class="text-2xl md:text-3xl font-bold text-green-700 mb-6 md:mb-8 border-b pb-4">Tambah Kuis Evaluasi</h2>
-        
-        <form id="form-tambah-kuis">
-            <div class="mb-10 bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
-                <h3 class="text-xl font-bold text-gray-800 mb-6">Informasi Kuis</h3>
-                <div class="flex flex-col space-y-5">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                        <label for="jumlah-soal" class="text-base font-semibold text-gray-700">Jumlah Soal:</label>
-                        <input type="number" id="jumlah-soal" value="1" min="1" class="w-24 border border-gray-300 rounded-md p-2 focus:ring-green-600 focus:border-green-600 text-center shadow-sm text-lg">
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                        <label for="syarat-lulus" class="text-base font-semibold text-gray-700">Syarat Kelulusan (Skor Minimal):</label>
-                        <div class="flex items-center gap-3">
-                            <input type="number" id="syarat-lulus" value="80" min="1" max="100" class="w-24 border border-gray-300 rounded-md p-2 focus:ring-green-600 focus:border-green-600 text-center shadow-sm text-lg">
-                            <span id="info-minimal-benar" class="text-sm text-blue-700 bg-blue-50 px-3 py-1.5 rounded-md border border-blue-200 font-semibold transition-all duration-300"></span>
+const createQuizAddTemplate = (moduleId) => `
+    <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- SIDEBAR -->
+            <aside class="w-full lg:w-1/4">
+                <div class="bg-white p-5 rounded-lg shadow-md sticky top-24 border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Evaluasi Pembelajaran</h3>
+                    <hr class="my-3 mx-[-1.25rem] border-t border-gray-200" />
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2 text-green-700 font-semibold p-2 bg-green-50 rounded border border-green-100">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Tambah Kuis Evaluasi
                         </div>
                     </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <a href="#/modul-detail/${moduleId}" class="flex items-center justify-center text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors">
+                            &larr; Kembali ke Modul
+                        </a>
+                    </div>
                 </div>
-            </div>
+            </aside>
+            
+            <!-- KONTEN UTAMA -->
+            <section class="w-full lg:w-3/4">
+                <div class="bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-2xl md:text-3xl font-bold text-green-700 mb-6 md:mb-8 border-b pb-4">Tambah Kuis Evaluasi</h2>
+                    
+                    <form id="form-tambah-kuis">
+                        <div class="mb-10 bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Informasi Kuis</h3>
+                            <div class="flex flex-col space-y-5">
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                                    <label for="jumlah-soal" class="text-base font-semibold text-gray-700 sm:w-1/3">Jumlah Soal:</label>
+                                    <input type="number" id="jumlah-soal" value="1" min="1" class="w-24 border border-gray-300 rounded-md p-2 focus:ring-green-600 focus:border-green-600 text-center shadow-sm text-lg">
+                                </div>
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                                    <label for="syarat-lulus" class="text-base font-semibold text-gray-700 sm:w-1/3">Syarat Kelulusan (%):</label>
+                                    <div class="flex flex-wrap items-center gap-3">
+                                        <input type="number" id="syarat-lulus" value="80" min="1" max="100" class="w-24 border border-gray-300 rounded-md p-2 focus:ring-green-600 focus:border-green-600 text-center shadow-sm text-lg">
+                                        <span id="info-minimal-benar" class="text-sm text-blue-700 bg-blue-50 px-3 py-1.5 rounded-md border border-blue-200 font-semibold transition-all duration-300"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="mb-8">
-                <h3 class="text-xl font-bold text-gray-800 mb-6">Daftar Pertanyaan</h3>
-                <div id="questions-container" class="space-y-8"></div>
-            </div>
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Daftar Pertanyaan</h3>
+                            <div id="questions-container" class="space-y-8"></div>
+                        </div>
 
-            <div class="flex justify-end mt-12 pt-6 border-t border-gray-200">
-                <button type="submit" id="btn-simpan-kuis" class="w-full sm:w-auto bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-lg transition duration-200 shadow-md text-lg">
-                    Simpan & Tambah Kuis
-                </button>
-            </div>
-        </form>
+                        <div class="flex justify-end mt-12 pt-6 border-t border-gray-200">
+                            <button type="submit" id="btn-simpan-kuis" class="w-full sm:w-auto bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-lg transition duration-200 shadow-md text-lg">
+                                Simpan & Tambah Kuis
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
     </div>
 `;
 
@@ -65,7 +91,10 @@ const createQuestionBoxTemplate = (index) => `
 
 const KuisAddPage = {
     async render() {
-        return createQuizAddTemplate();
+        // Ambil moduleId dari URL untuk dikirim ke template (agar tombol kembali berfungsi)
+        const urlParts = window.location.hash.split('/');
+        const moduleId = urlParts[2];
+        return createQuizAddTemplate(moduleId);
     },
 
     async afterRender() {
@@ -129,7 +158,7 @@ const KuisAddPage = {
                     questionsContainer.removeChild(questionsContainer.lastElementChild);
                 }
             }
-            updateInfoKelulusan();
+            updateInfoKelulusan(); 
         });
 
         jumlahSoalInput.addEventListener('blur', (e) => {

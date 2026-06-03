@@ -1,6 +1,59 @@
-import { getModules, deleteModule, getCurrentUser } from '../utils/api.js';
+import { getModules, deleteModule, getCurrentUser, getModule } from '../utils/api.js';
+
+import ModulAddModal from './modul-add-page.js';
+import ModulEditModal from './modul-edit-page.js';
 
 const ModulPage = {
+  _createGenericModalTemplate() {
+    return `
+      <div id="generic-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="generic-modal-content" class="bg-white w-11/12 md:w-3/4 lg:w-3/5 xl:w-1/2 max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-8 transform scale-95 transition-transform duration-300">
+          <div class="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
+            <h2 id="generic-modal-title" class="text-2xl font-bold text-green-700">Judul Modal</h2>
+            <button id="btn-close-generic-modal" class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          
+          <div id="generic-modal-body"></div>
+          
+        </div>
+      </div>
+    `;
+  },
+
+  // FUNGSI INTI UNTUK MEMBUKA MODAL
+  _openGenericModal(title, htmlContent, initCallback) {
+    document.getElementById('generic-modal-title').textContent = title;
+    document.getElementById('generic-modal-body').innerHTML = htmlContent;
+
+    const modal = document.getElementById('generic-modal');
+    const modalContent = document.getElementById('generic-modal-content');
+
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modalContent.classList.remove('scale-95');
+    modalContent.classList.add('scale-100');
+    document.body.style.overflow = 'hidden';
+
+    const closeModal = () => {
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modalContent.classList.remove('scale-100');
+        modalContent.classList.add('scale-95');
+        document.body.style.overflow = '';
+        setTimeout(() => document.getElementById('generic-modal-body').innerHTML = '', 300);
+    };
+
+    document.getElementById('btn-close-generic-modal').onclick = closeModal;
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+    const onSuccess = () => {
+        closeModal();
+        window.location.reload(); 
+    };
+
+    if (initCallback) initCallback(closeModal, onSuccess);
+  },
+
   async render() {
     const user = getCurrentUser();
     const isTeacherOrSuperAdmin = user && (user.role === 'teacher' || user.role === 'super admin');
@@ -8,8 +61,9 @@ const ModulPage = {
     try {
       const modules = await getModules();
       
+      // Tombol kini menggunakan ID untuk men-trigger modal
       const teacherButton = isTeacherOrSuperAdmin 
-        ? `<a href="#/modul-add" class="bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors">Tambah Modul</a>`
+        ? `<button id="btn-add-module" class="bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 transition-colors">Tambah Modul</button>`
         : '';
 
       return `
@@ -23,6 +77,8 @@ const ModulPage = {
             ${modules.map(module => this.createModuleCard(module, isTeacherOrSuperAdmin)).join('')}
           </div>
         </div>
+
+        ${isTeacherOrSuperAdmin ? this._createGenericModalTemplate() : ''}
       `;
     } catch (error) {
       return `<div class="container mx-auto py-8 px-10 md:px-20 lg:px-40"><p class="text-red-500">Error loading modules: ${error.message}</p></div>`;
@@ -34,7 +90,7 @@ const ModulPage = {
       ? `
         <div class="p-5 pt-0">
             <div class="flex gap-4">
-              <a href="#/modul-edit/${module.id}" class="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 text-center transition-colors rounded-lg">Edit</a>
+              <button data-id="${module.id}" class="btn-edit-module flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 text-center transition-colors rounded-lg">Edit</button>
               <button data-id="${module.id}" class="delete-btn flex-1 bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-4 transition-colors rounded-lg">Hapus</button>
             </div>
         </div>
@@ -83,6 +139,38 @@ const ModulPage = {
     const loading = document.getElementById('loading');
 
     if (user && (user.role === 'teacher' || user.role === 'super admin')) {
+      
+      // 1. EVENT LISTENER TAMBAH MODUL (Buka Modal)
+      const btnAddModule = document.getElementById('btn-add-module');
+      if (btnAddModule) {
+          btnAddModule.onclick = () => {
+              this._openGenericModal('Tambah Modul Baru', ModulAddModal.render(), (closeCb, successCb) => {
+                  ModulAddModal.afterRender(closeCb, successCb);
+              });
+          };
+      }
+
+      // 2. EVENT LISTENER EDIT MODUL (Buka Modal)
+      const editButtons = document.querySelectorAll('.btn-edit-module');
+      editButtons.forEach(btn => {
+          btn.onclick = async (e) => {
+              const moduleId = e.currentTarget.dataset.id;
+              
+              // Tampilkan loading di dalam modal
+              this._openGenericModal('Edit Modul', '<p class="text-center text-gray-500 py-10">Mengambil data modul dari server...</p>');
+              
+              try {
+                  const moduleData = await getModule(moduleId);
+                  document.getElementById('generic-modal-body').innerHTML = ModulEditModal.render(moduleData);
+                  
+                  ModulEditModal.afterRender(moduleId, document.getElementById('btn-close-generic-modal').onclick, () => window.location.reload());
+              } catch (err) {
+                  document.getElementById('generic-modal-body').innerHTML = `<p class="text-red-500 py-10 text-center">Gagal memuat: ${err.message}</p>`;
+              }
+          };
+      });
+
+      // 3. EVENT LISTENER HAPUS MODUL
       const deleteButtons = document.querySelectorAll('.delete-btn');
       deleteButtons.forEach(button => {
         button.addEventListener('click', async (e) => {

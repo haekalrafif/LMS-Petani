@@ -1,11 +1,17 @@
-import { getModule, getCurrentUser, getModuleProgress, markMaterialAsCompleted, getQuizByModule, getMyQuizResult } from '../utils/api.js';
+import { getModule, getCurrentUser, getModuleProgress, markMaterialAsCompleted, getQuizByModule, getMyQuizResult, getMaterialById } from '../utils/api.js';
+
+// MENGIMPORT FILE-FILE KOMPONEN KITA
+import TopicAddModal from './topic-add-page.js';
+import TopicEditModal from './topic-edit-page.js';
+import MateriAddModal from './modul-materi-add-page.js';
+import MateriEditModal from './modul-materi-edit-page.js';
 
 class ModulDetailPage {
   constructor() {
     this._module = null;
     this._user = null;
     this._quiz = null; 
-    this._quizResult = null;
+    this._quizResult = null; 
     this._activeMaterialId = null;
     this._completedMaterials = [];
     this._allMaterials = [];
@@ -22,6 +28,60 @@ class ModulDetailPage {
       return null;
     }
     return `https://www.youtube.com/embed/${videoId}`;
+  }
+
+  // WADAH KOSONG MODAL GENERIK (Digunakan bergantian oleh 4 form di atas)
+  _createGenericModalTemplate() {
+    return `
+      <div id="generic-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="generic-modal-content" class="bg-white w-11/12 md:w-3/4 lg:w-3/5 xl:w-1/2 max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-8 transform scale-95 transition-transform duration-300">
+          <div class="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
+            <h2 id="generic-modal-title" class="text-2xl font-bold text-green-700">Judul Modal</h2>
+            <button id="btn-close-generic-modal" class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          
+          <div id="generic-modal-body"></div>
+          
+        </div>
+      </div>
+    `;
+  }
+
+  // FUNGSI INTI UNTUK MEMBUKA MODAL DAN MENYUNTIKKAN KONTEN
+  _openGenericModal(title, htmlContent, initCallback) {
+    document.getElementById('generic-modal-title').textContent = title;
+    document.getElementById('generic-modal-body').innerHTML = htmlContent;
+
+    const modal = document.getElementById('generic-modal');
+    const modalContent = document.getElementById('generic-modal-content');
+
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modalContent.classList.remove('scale-95');
+    modalContent.classList.add('scale-100');
+    document.body.style.overflow = 'hidden';
+
+    // Logika Menutup Modal
+    const closeModal = () => {
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modalContent.classList.remove('scale-100');
+        modalContent.classList.add('scale-95');
+        document.body.style.overflow = '';
+        setTimeout(() => document.getElementById('generic-modal-body').innerHTML = '', 300); // Bersihkan form
+    };
+
+    document.getElementById('btn-close-generic-modal').onclick = closeModal;
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+    // Callback Sukses (Menutup modal dan merefresh halaman agar data up to date)
+    const onSuccess = () => {
+        closeModal();
+        window.location.reload(); 
+    };
+
+    // Jalankan logika event listener milik form komponen tersebut (seperti file upload, form submit)
+    if (initCallback) initCallback(closeModal, onSuccess);
   }
 
   async render() {
@@ -46,9 +106,7 @@ class ModulDetailPage {
         return `<p class="text-center text-red-500">Gagal memuat modul: ${error.message}</p>`;
     }
 
-    if (!this._module) {
-        return `<p class="text-center text-red-500">Modul tidak ditemukan.</p>`;
-    }
+    if (!this._module) return `<p class="text-center text-red-500">Modul tidak ditemukan.</p>`;
 
     try {
         this._quiz = await getQuizByModule(moduleId);
@@ -82,13 +140,12 @@ class ModulDetailPage {
         }
     }
 
-    // Persentase sekarang otomatis menghitung kuis
     const { percentage } = this._calculateProgress();
+    const isCurrentAuthor = this._user && (this._user.id === this._module.author_id || this._user.role === 'super admin');
 
     return `
-        <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40">
+        <div class="container mx-auto py-8 px-10 md:px-20 lg:px-40 relative">
         <div class="flex flex-col lg:flex-row gap-8">
-            
             <aside class="w-full lg:w-1/4">
             <div class="bg-white p-5 rounded-lg shadow-md sticky top-24 border border-gray-100">
                 <h3 class="text-lg font-bold text-gray-800 mb-2">${this._module.title}</h3>
@@ -108,11 +165,11 @@ class ModulDetailPage {
                     ${this._generateSidebarList()}
                 </nav>
 
-                ${isTeacher && (!this._module.author_id || this._module.author_id === this._user.id || this._user.role === 'super admin') ? `
+                ${isCurrentAuthor ? `
                 <div class="mt-6 flex flex-col gap-3">
-                    <a href="#/modul/${this._module.id}/tambah-topik" class="bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-green-700 transition-colors block text-center text-sm shadow-sm">
+                    <button id="btn-add-topic" class="bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-green-700 transition-colors block text-center text-sm shadow-sm">
                         Tambah Topik Baru
-                    </a>
+                    </button>
                     
                     ${!this._quiz ? `
                     <a href="#/modul/${this._module.id}/tambah-kuis" class="bg-blue-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors block text-center text-sm shadow-sm">
@@ -127,10 +184,13 @@ class ModulDetailPage {
             <section id="material-content-container" class="w-full lg:w-3/4">
             ${this._allMaterials.length > 0
                 ? this._createMaterialContent(this._allMaterials.find(m => m.id === this._activeMaterialId))
-                : `<div class="bg-white p-6 rounded-lg shadow-md"><p class="text-gray-500">Silakan pilih materi terlebih dahulu.</p></div>`
+                : `<div class="bg-white p-6 rounded-lg shadow-md"><p class="text-gray-500">Belum ada materi pada modul ini. ${isCurrentAuthor ? 'Silakan tambah topik dan materi.' : ''}</p></div>`
             }
             </section>
         </div>
+        
+        ${isCurrentAuthor ? this._createGenericModalTemplate() : ''}
+        
         </div>
     `;
   }
@@ -138,10 +198,9 @@ class ModulDetailPage {
   _createTopicSection(topic, isModuleAuthor) {
     const addMaterialButtonListItem = isModuleAuthor 
         ? `<li class="mt-2">
-             <a href="#/modul/${this._module.id}/topic/${topic.id}/tambah-materi" 
-                class="block text-center w-full bg-gray-100 text-gray-700 font-semibold py-2 px-3 rounded-md hover:bg-gray-200 transition-colors text-sm">
+             <button data-topic-id="${topic.id}" class="btn-add-materi block text-center w-full bg-gray-100 text-gray-700 font-semibold py-2 px-3 rounded-md hover:bg-gray-200 transition-colors text-sm">
                + Tambah Materi
-             </a>
+             </button>
            </li>`
         : '';
 
@@ -169,8 +228,72 @@ class ModulDetailPage {
     this._addNavigationListeners();
     this._addCompleteButtonListener();
     this._updateActiveMaterialStyle(); 
+    
+    const isCurrentAuthor = this._user && (this._user.id === this._module?.author_id || this._user.role === 'super admin');
+    if (isCurrentAuthor) {
+        this._attachSidebarModalListeners(); // Listener untuk tombol di Sidebar
+        this._attachContentModalListeners(); // Listener untuk tombol di area Materi
+    }
   }
-  
+
+  // --- PEMANGGILAN KOMPONEN MODAL DARI SIDEBAR ---
+  _attachSidebarModalListeners() {
+      // 1. Panggil Komponen Modal Tambah Topik
+      const btnAddTopic = document.getElementById('btn-add-topic');
+      if (btnAddTopic) {
+          btnAddTopic.onclick = () => {
+              this._openGenericModal('Tambah Topik Baru', TopicAddModal.render(), (closeCb, successCb) => {
+                  TopicAddModal.afterRender(this._module.id, closeCb, successCb);
+              });
+          };
+      }
+
+      // 2. Panggil Komponen Modal Tambah Materi
+      document.querySelectorAll('.btn-add-materi').forEach(btn => {
+          btn.onclick = (e) => {
+              const topicId = e.currentTarget.dataset.topicId;
+              this._openGenericModal('Tambah Materi Baru', MateriAddModal.render(), (closeCb, successCb) => {
+                  MateriAddModal.afterRender(this._module.id, topicId, closeCb, successCb);
+              });
+          };
+      });
+  }
+
+  // --- PEMANGGILAN KOMPONEN MODAL DARI KONTEN TENGAH ---
+  _attachContentModalListeners() {
+      // 3. Panggil Komponen Modal Edit Topik
+      document.querySelectorAll('.btn-edit-topic').forEach(btn => {
+          btn.onclick = async (e) => {
+              const topicId = e.currentTarget.dataset.topicId;
+              this._openGenericModal('Edit Topik', '<p class="text-center text-gray-500 py-10">Mempersiapkan form...</p>');
+              
+              const topic = this._module.topics.find(t => t.id == topicId);
+              if (topic) {
+                  document.getElementById('generic-modal-body').innerHTML = TopicEditModal.render(topic);
+                  TopicEditModal.afterRender(this._module.id, topicId, document.getElementById('btn-close-generic-modal').onclick, () => window.location.reload());
+              }
+          };
+      });
+
+      // 4. Panggil Komponen Modal Edit Materi
+      document.querySelectorAll('.btn-edit-materi').forEach(btn => {
+          btn.onclick = async (e) => {
+              const materialId = e.currentTarget.dataset.materialId;
+              // Memunculkan Loading State Sementara di dalam modal
+              this._openGenericModal('Edit Materi', '<p class="text-center text-gray-500 py-10">Mengambil data materi dari server...</p>');
+              
+              try {
+                  const material = await getMaterialById(this._module.id, materialId);
+                  document.getElementById('generic-modal-body').innerHTML = MateriEditModal.render(material);
+                  MateriEditModal.afterRender(this._module.id, materialId, document.getElementById('btn-close-generic-modal').onclick, () => window.location.reload());
+              } catch (err) {
+                  document.getElementById('generic-modal-body').innerHTML = `<p class="text-red-500 py-10 text-center">Gagal memuat: ${err.message}</p>`;
+              }
+          };
+      });
+  }
+
+  // ... (SISA KODE DI BAWAH INI SAMA PERSIS DENGAN SEBELUMNYA) ...
   _restoreAccordionState() {
       const moduleId = this._module.id;
       const openTopics = JSON.parse(localStorage.getItem(`open_topics_${moduleId}`)) || [];
@@ -180,7 +303,6 @@ class ModulDetailPage {
           if (header) {
               const content = header.nextElementSibling;
               const icon = header.querySelector('svg');
-              
               if (content) content.classList.remove('hidden');
               if (icon) icon.classList.add('rotate-180');
           }
@@ -200,15 +322,11 @@ class ModulDetailPage {
               icon.classList.toggle('rotate-180');
 
               let openTopics = JSON.parse(localStorage.getItem(`open_topics_${moduleId}`)) || [];
-
               if (!content.classList.contains('hidden')) {
-                  if (!openTopics.includes(topicId)) {
-                      openTopics.push(topicId);
-                  }
+                  if (!openTopics.includes(topicId)) openTopics.push(topicId);
               } else {
                   openTopics = openTopics.filter(id => id !== topicId);
               }
-
               localStorage.setItem(`open_topics_${moduleId}`, JSON.stringify(openTopics));
           });
       });
@@ -228,9 +346,7 @@ class ModulDetailPage {
     if (!this._allMaterials || this._allMaterials.length === 0) return null;
     if (this._user && (this._user.role === 'super admin' || this._user.role === 'teacher')) return this._allMaterials[0].id;
     for (const material of this._allMaterials) {
-        if (!this._completedMaterials.includes(material.id)) {
-            return material.id;
-        }
+        if (!this._completedMaterials.includes(material.id)) return material.id;
     }
     return this._allMaterials[this._allMaterials.length - 1].id;
   }
@@ -278,15 +394,10 @@ class ModulDetailPage {
   _calculateProgress() {
     let totalItems = this._allMaterials.length;
     let completedItems = this._completedMaterials.length;
-
-    // Jika modul ini memiliki kuis, jadikan kuis sebagai 1 item wajib diselesaikan
     if (this._quiz) {
         totalItems += 1;
-        if (this._quizResult && this._quizResult.is_passed) {
-            completedItems += 1;
-        }
+        if (this._quizResult && this._quizResult.is_passed) completedItems += 1;
     }
-
     if (totalItems === 0) return { percentage: 0 };
     return { percentage: Math.round((completedItems / totalItems) * 100) };
   }
@@ -310,6 +421,10 @@ class ModulDetailPage {
     this._updateActiveMaterialStyle();
     this._addCompleteButtonListener();
     this._addNavigationListeners(); 
+    
+    // Karena konten berubah, pasang ulang listener modal khusus tombol konten!
+    const isCurrentAuthor = this._user && (this._user.id === this._module?.author_id || this._user.role === 'super admin');
+    if (isCurrentAuthor) this._attachContentModalListeners();
   }
 
   _addMaterialLinkListeners() {
@@ -321,7 +436,6 @@ class ModulDetailPage {
             alert("Selesaikan materi sebelumnya untuk membuka materi ini.");
             return;
         }
-        
         const materialId = parseInt(event.currentTarget.dataset.materialId, 10);
         this._handleMaterialChange(materialId);
       });
@@ -359,8 +473,13 @@ class ModulDetailPage {
           this._restoreAccordionState();
           this._addAccordionListeners(); 
           this._addMaterialLinkListeners();
+          
+          // Memasang ulang Listener sidebar setelah sidebar ter-render ulang
+          const isCurrentAuthor = this._user && (this._user.id === this._module?.author_id || this._user.role === 'super admin');
+          if (isCurrentAuthor) this._attachSidebarModalListeners();
+
           this._updateActiveMaterialStyle();
-          this._updateProgressBar();
+          this._updateProgressBar(); 
 
           button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 -ml-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg> Selesai`;
           button.classList.remove('bg-green-600', 'hover:bg-green-700', 'complete-btn');
@@ -384,12 +503,8 @@ class ModulDetailPage {
 
   _updateActiveMaterialStyle() {
     document.querySelectorAll('.material-link').forEach(l => l.classList.remove('active-material'));
-    
     const activeLink = document.querySelector(`.material-link[data-material-id='${this._activeMaterialId}']`);
-    
-    if (activeLink) {
-        activeLink.classList.add('active-material');
-    }
+    if (activeLink) activeLink.classList.add('active-material');
 
     const styleId = 'dynamic-active-material-style';
     if (!document.getElementById(styleId)) {
@@ -409,7 +524,6 @@ class ModulDetailPage {
 
     const completedIcon = isCompleted ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 ml-auto flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>` : '';
     const lockIcon = !isUnlocked ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 ml-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a3 3 0 00-3 3v2H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V9a2 2 0 00-2-2h-1V5a3 3 0 00-3-3zm-1 5v2h2V7a1 1 0 00-2 0z" clip-rule="evenodd" /></svg>` : '';
-
     const textClass = isUnlocked ? 'text-gray-900' : 'text-gray-400';
     const cursorClass = isUnlocked ? 'cursor-pointer' : 'cursor-not-allowed';
     const lockedClass = isUnlocked ? '' : 'locked';
@@ -462,7 +576,6 @@ class ModulDetailPage {
       } else {
            if (this._quiz) {
                const isLastMaterialCompleted = this._completedMaterials.includes(material.id);
-               
                if (isTeacher || isLastMaterialCompleted) {
                    buttonsHtml += `
                        <a href="#/kuis/${this._module.id}" class="w-full lg:w-auto justify-center bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm font-medium">
@@ -486,7 +599,7 @@ class ModulDetailPage {
   }
 
   _createMaterialContent(material) {
-    if (!material) return '<div class="bg-white p-6 rounded-lg shadow-md"><p class="text-gray-500">Materi tidak ditemukan.</p></div>';
+    if (!material) return '';
 
     const isTeacher = this._user && (this._user.role === 'teacher' || this._user.role === 'super admin');
     const isModuleAuthor = this._user && (this._user.id === this._module.author_id || this._user.role === 'super admin');
@@ -503,14 +616,15 @@ class ModulDetailPage {
 
     let adminButtons = '';
     if (isTeacher && isModuleAuthor) {
+        // Tombol ini tidak menggunakan <a> lagi, melainkan <button> agar ditangkap event listener Modal
         adminButtons = `
             <div class="flex gap-2">
-                <a href="#/modul/${this._module.id}/topic-edit/${material.topic_id}" class="bg-yellow-600 text-white font-bold py-2 px-4 rounded hover:bg-yellow-700 text-sm flex items-center">
+                <button data-topic-id="${material.topic_id}" class="btn-edit-topic bg-yellow-600 text-white font-bold py-2 px-4 rounded hover:bg-yellow-700 text-sm flex items-center">
                     Edit Topik
-                </a>
-                <a href="#/modul/${this._module.id}/materi-edit/${material.id}" class="bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-800 text-sm flex items-center">
+                </button>
+                <button data-material-id="${material.id}" class="btn-edit-materi bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-800 text-sm flex items-center">
                     Edit Materi
-                </a>
+                </button>
             </div>
         `;
     }
