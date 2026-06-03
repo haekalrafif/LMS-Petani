@@ -11,7 +11,7 @@ class KuisTakePage {
         return `
             <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-opacity duration-300">
                 <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 </div>
                 <h2 class="text-3xl font-bold text-gray-800 mb-6 uppercase tracking-wide">Kuis: ${this._quizData.title}</h2>
                 <div class="w-full bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-200 mb-8 text-left">
@@ -52,8 +52,8 @@ class KuisTakePage {
                                     ${['A', 'B', 'C', 'D'].map(opt => `
                                         <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50 transition-colors focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent group">
                                             <input type="radio" name="question_${q.id}" value="${opt}" class="w-6 h-6 text-green-600 border-gray-300 focus:ring-green-600 cursor-pointer" required>
-                                            <span class="ml-4 font-bold text-gray-700 w-6 group-hover:text-green-700">${opt}.</span>
-                                            <span class="ml-2 text-gray-700 group-hover:text-gray-900">${q[`option_${opt.toLowerCase()}`]}</span>
+                                            <span class="ml-4 font-bold text-gray-700 w-6 shrink-0 group-hover:text-green-700">${opt}.</span>
+                                            <span class="ml-2 text-gray-700 flex-1 break-words group-hover:text-gray-900">${q['option_' + opt.toLowerCase()]}</span>
                                         </label>
                                     `).join('')}
                                 </div>
@@ -95,8 +95,8 @@ class KuisTakePage {
                                     const isCorrect = q.correct_answer === opt;
                                     return `
                                     <div class="flex items-center p-4 border rounded-xl ${isCorrect ? 'bg-green-50 border-green-300 ring-1 ring-green-400' : 'border-gray-200 bg-white opacity-60'}">
-                                        <span class="font-bold w-8 ${isCorrect ? 'text-green-700 text-lg' : 'text-gray-500'}">${opt}.</span>
-                                        <span class="ml-2 ${isCorrect ? 'text-green-800 font-semibold' : 'text-gray-600'}">${q[`option_${opt.toLowerCase()}`]}</span>
+                                        <span class="font-bold w-8 shrink-0 ${isCorrect ? 'text-green-700 text-lg' : 'text-gray-500'}">${opt}.</span>
+                                        <span class="ml-2 flex-1 break-words ${isCorrect ? 'text-green-800 font-semibold' : 'text-gray-600'}">${q['option_' + opt.toLowerCase()]}</span>
                                         ${isCorrect ? `<svg class="w-6 h-6 text-green-600 ml-auto shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>` : ''}
                                     </div>
                                     `;
@@ -110,7 +110,6 @@ class KuisTakePage {
     }
 
     _createResultTemplate(score, isPassed, correctCount, userAnswers = []) {
-        // Blok ulasan soal hanya di-generate jika siswa dinyatakan lulus (isPassed)
         let reviewSectionHtml = '';
         if (isPassed) {
             reviewSectionHtml = `
@@ -141,22 +140,22 @@ class KuisTakePage {
                                         if (opt === q.correct_answer && opt === selectedOpt) {
                                             bgClass = "bg-green-100 border-green-400 ring-1 ring-green-400";
                                             textClass = "text-green-800 font-bold";
-                                            infoLabel = "✔️ (Jawaban Anda)";
+                                            infoLabel = '✔️ <span class="hidden sm:inline font-semibold ml-1">(Jawaban Anda)</span>';
                                         } else if (opt === selectedOpt && opt !== q.correct_answer) {
                                             bgClass = "bg-red-100 border-red-400 ring-1 ring-red-400";
                                             textClass = "text-red-800 font-bold";
-                                            infoLabel = "❌ (Pilihan Anda)";
+                                            infoLabel = '❌ <span class="hidden sm:inline font-semibold ml-1">(Pilihan Anda)</span>';
                                         } else if (opt === q.correct_answer && opt !== selectedOpt) {
                                             bgClass = "bg-green-50 border-green-300 border-dashed";
                                             textClass = "text-green-700 font-bold";
-                                            infoLabel = "✔️ (Jawaban Benar)";
+                                            infoLabel = '✔️ <span class="hidden sm:inline font-semibold ml-1">(Jawaban Benar)</span>';
                                         }
 
                                         return `
                                         <div class="flex items-center p-3 md:p-4 border rounded-xl ${bgClass}">
-                                            <span class="font-bold w-8 ${textClass}">${opt}.</span>
-                                            <span class="ml-2 ${textClass}">${q[`option_${opt.toLowerCase()}`]}</span>
-                                            <span class="ml-auto text-sm ${textClass} font-semibold shrink-0">${infoLabel}</span>
+                                            <span class="font-bold w-8 shrink-0 ${textClass}">${opt}.</span>
+                                            <span class="ml-2 flex-1 break-words pr-2 ${textClass}">${q['option_' + opt.toLowerCase()]}</span>
+                                            <span class="ml-auto text-sm ${textClass} shrink-0 text-right">${infoLabel}</span>
                                         </div>
                                         `;
                                     }).join('')}
@@ -376,7 +375,6 @@ class KuisTakePage {
                         contentArea.style.opacity = '1';
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                         
-                        // Attach ulang jika gagal lagi
                         this._attachRetakeListener();
                     }, 300);
 

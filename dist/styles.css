@@ -1032,6 +1032,9 @@
     --tw-tracking: var(--tracking-widest);
     letter-spacing: var(--tracking-widest);
   }
+  .break-words {
+    overflow-wrap: break-word;
+  }
   .whitespace-pre-wrap {
     white-space: pre-wrap;
   }
