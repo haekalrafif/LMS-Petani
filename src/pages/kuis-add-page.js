@@ -63,7 +63,6 @@ const createQuestionBoxTemplate = (index) => `
     </div>
 `;
 
-// --- LOGIKA HALAMAN ---
 const KuisAddPage = {
     async render() {
         return createQuizAddTemplate();
@@ -77,12 +76,10 @@ const KuisAddPage = {
         const formKuis = document.getElementById('form-tambah-kuis');
         const btnSimpan = document.getElementById('btn-simpan-kuis');
 
-        // URL berbentuk: #/modul/:id/tambah-kuis
         const urlParts = window.location.hash.split('/');
         const moduleId = urlParts[2];
         let moduleTitle = "Kuis Modul Evaluasi";
 
-        // Ambil judul modul dari backend untuk dijadikan judul kuis
         try {
             const moduleData = await getModule(moduleId);
             if (moduleData && moduleData.title) {
@@ -95,7 +92,12 @@ const KuisAddPage = {
         const updateInfoKelulusan = () => {
             let jml = parseInt(jumlahSoalInput.value) || 0;
             let syarat = parseInt(syaratLulusInput.value) || 0;
-            if (syarat > 100) { syarat = 100; syaratLulusInput.value = 100; }
+            
+            if (syarat > 100) { 
+                syarat = 100; 
+                syaratLulusInput.value = 100; 
+            }
+
             if (jml > 0 && syarat > 0) {
                 const butuhBenar = Math.ceil((syarat / 100) * jml);
                 infoMinimalBenar.innerHTML = `Butuh minimal <span class="text-blue-800 font-bold text-base">${butuhBenar} benar</span> untuk lulus`;
@@ -115,7 +117,9 @@ const KuisAddPage = {
         jumlahSoalInput.addEventListener('input', (e) => {
             let newCount = parseInt(e.target.value);
             if (isNaN(newCount) || newCount < 1) newCount = 1;
+            
             const currentCount = questionsContainer.querySelectorAll('.question-box').length;
+            
             if (newCount > currentCount) {
                 for (let i = currentCount + 1; i <= newCount; i++) {
                     questionsContainer.insertAdjacentHTML('beforeend', createQuestionBoxTemplate(i));
@@ -128,7 +132,25 @@ const KuisAddPage = {
             updateInfoKelulusan();
         });
 
-        // Event listener saat form di-submit
+        jumlahSoalInput.addEventListener('blur', (e) => {
+             if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                 e.target.value = 1;
+                 const currentCount = questionsContainer.querySelectorAll('.question-box').length;
+                 for (let i = currentCount; i > 1; i--) {
+                     questionsContainer.removeChild(questionsContainer.lastElementChild);
+                 }
+                 updateInfoKelulusan();
+             }
+        });
+
+        syaratLulusInput.addEventListener('input', updateInfoKelulusan);
+        syaratLulusInput.addEventListener('blur', () => {
+            if (syaratLulusInput.value === '' || parseInt(syaratLulusInput.value) < 1) {
+                syaratLulusInput.value = 1;
+            }
+            updateInfoKelulusan();
+        });
+
         formKuis.addEventListener('submit', async (e) => {
             e.preventDefault();
             btnSimpan.disabled = true;
@@ -138,11 +160,10 @@ const KuisAddPage = {
             const questionBoxes = document.querySelectorAll('.question-box');
             const questionsArray = [];
 
-            // Ekstrak nilai dari tiap kotak soal
             questionBoxes.forEach((box, idx) => {
                 const index = idx + 1;
                 const qText = box.querySelector('.question-text').value;
-                const optionInputs = box.querySelectorAll('.option-input'); // Akan ada 4 input
+                const optionInputs = box.querySelectorAll('.option-input'); 
                 const correctRadio = box.querySelector(`input[name="kunci_jawaban_${index}"]:checked`);
 
                 questionsArray.push({
@@ -166,7 +187,7 @@ const KuisAddPage = {
                 await createQuiz(quizDataPayload);
                 alert('Kuis berhasil disimpan!');
                 window.location.replace(`#/modul-detail/${moduleId}`);
-                setTimeout(() => window.location.reload(), 100);
+                setTimeout(() => window.location.reload(), 100); 
             } catch (error) {
                 alert(`Gagal menyimpan kuis: ${error.message}`);
                 btnSimpan.disabled = false;
