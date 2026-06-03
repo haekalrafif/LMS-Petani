@@ -268,6 +268,7 @@ class KuisTakePage {
             if (isTeacher) {
                 contentArea.innerHTML = this._createTeacherViewTemplate();
                 contentArea.style.opacity = '1';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
                 const existingResult = await getMyQuizResult(this._quizData.id);
                 
@@ -281,7 +282,8 @@ class KuisTakePage {
                     }
                     contentArea.innerHTML = this._createResultTemplate(existingResult.score, existingResult.is_passed, correctCount, existingResult.answers);
                     contentArea.style.opacity = '1';
-                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
                     // Attach listener untuk tombol "Ulangi Kuis" (jika gagal)
                     this._attachRetakeListener();
                 } else {
@@ -294,6 +296,7 @@ class KuisTakePage {
                                 contentArea.innerHTML = this._createQuestionsTemplate();
                                 contentArea.style.opacity = '1';
                                 contentArea.style.transition = 'opacity 0.5s ease-in-out';
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
                                 this._attachFormSubmitListener();
                             }, 300);
                         });
@@ -324,6 +327,7 @@ class KuisTakePage {
                     contentArea.innerHTML = this._createQuestionsTemplate();
                     contentArea.style.opacity = '1';
                     contentArea.style.transition = 'opacity 0.5s ease-in-out';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     this._attachFormSubmitListener();
                 }, 300);
             });
@@ -370,6 +374,8 @@ class KuisTakePage {
                     setTimeout(() => {
                         contentArea.innerHTML = this._createResultTemplate(score, isPassed, correctCount, userAnswersArray);
                         contentArea.style.opacity = '1';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        
                         // Attach ulang jika gagal lagi
                         this._attachRetakeListener();
                     }, 300);
