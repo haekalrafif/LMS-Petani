@@ -12,12 +12,11 @@ const MateriAddModal = {
           <label for="youtube_url" class="block text-gray-700 text-sm font-bold mb-2">Link YouTube (Opsional)</label>
           <input type="text" id="youtube_url" name="youtube_url" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
-        
         <div class="mb-6 mt-4">
           <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Materi (Opsional, JPG)</label>
           
-          <div id="preview-container" class="mb-4 hidden relative inline-block group rounded-lg overflow-hidden">
-              <img id="image-preview" src="" alt="Preview" class="w-32 h-auto object-cover border border-gray-200">
+          <div id="preview-container" style="display: none;" class="mb-4 relative w-fit group rounded-lg overflow-hidden">
+              <img id="image-preview" alt="Preview" class="w-64 h-auto object-cover border border-gray-200">
               <div id="btn-remove-image" class="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
                   <svg class="w-10 h-10 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </div>
@@ -32,7 +31,6 @@ const MateriAddModal = {
           </label>
           <p id="file-name-display" class="mt-2 text-sm text-green-700 font-medium hidden"></p>
         </div>
-
         <div class="mb-6">
           <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Penjelasan Materi</label>
           <textarea id="content" name="content" rows="6" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
@@ -56,7 +54,8 @@ const MateriAddModal = {
 
     btnRemoveImage.addEventListener('click', () => {
         imageInput.value = '';
-        previewContainer.classList.add('hidden');
+        imagePreview.removeAttribute('src');
+        previewContainer.style.display = 'none';
         fileNameDisplay.classList.add('hidden');
         fileNameDisplay.textContent = '';
     });
@@ -66,7 +65,7 @@ const MateriAddModal = {
             const file = this.files[0];
             if (file) {
                 imagePreview.src = URL.createObjectURL(file);
-                previewContainer.classList.remove('hidden');
+                previewContainer.style.display = 'inline-block';
                 fileNameDisplay.textContent = `File dipilih: ${file.name}`;
                 fileNameDisplay.classList.remove('hidden');
             }
