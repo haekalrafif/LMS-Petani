@@ -16,7 +16,7 @@ const MateriEditModal = {
           <input type="text" id="youtube_url" name="youtube_url" value="${material.youtube_url || ''}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <div class="mb-6 mt-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Materi (Opsional, JPG)</label>
+          <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Materi (Opsional)</label>
           
           <div id="preview-container" style="display: ${displayStyle};" class="mb-4 relative w-fit group rounded-lg overflow-hidden">
               <img id="image-preview" src="${material.image_url || ''}" alt="Preview" class="w-64 h-auto object-cover border border-gray-200">
@@ -29,6 +29,7 @@ const MateriEditModal = {
               <div class="flex flex-col items-center justify-center pt-5 pb-6">
                   <svg class="w-6 h-6 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                   <p class="mb-1 text-sm text-gray-500"><span class="font-semibold text-green-700">Klik untuk mengganti gambar</span></p>
+                  <p class="text-xs text-gray-500">Format JPG</p>
               </div>
               <input type="file" id="image" name="image" accept="image/jpeg" class="hidden">
           </label>
