@@ -27,7 +27,7 @@ const TopicAddModal = {
       saveButton.disabled = true;
       saveButton.textContent = 'Menyimpan...';
       try {
-        await createTopic({ title: form.title.value, module_id: moduleId });
+        await createTopic(moduleId, { title: form.title.value });
         alert('Topik berhasil ditambahkan!');
         successCallback(); // Fungsi ini akan me-reload halaman dari tuan rumah
       } catch (error) {

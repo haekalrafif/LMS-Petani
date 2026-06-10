@@ -10,7 +10,6 @@ const render = () => {
 };
 
 window.addEventListener('hashchange', render);
-
 window.addEventListener('DOMContentLoaded', render);
 
 if (document.readyState === 'interactive' || document.readyState === 'complete') {
